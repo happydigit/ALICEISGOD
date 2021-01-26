@@ -1,36 +1,84 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TLatex.h>
 #include <stdbool.h>
 #include <vector>
 #include <iostream>
 #include <vector>
 #include <math.h> 
 #include <TRandom.h>
+#include <TColor.h>
+#include <TPaveStats.h>
+#include <TList.h>
+#include <TROOT.h>
+#include <TGraphErrors.h>
+#include <TArrow.h>
 
 		// Definition de la fonction de Boltzmann
 		
-double fitf(double *x, double *par1) {
-      double res = sqrt(2/3.14)*((x[0]+par1[1])*(x[0]+par1[1])*exp(-(x[0]+par1[1])*(x[0]+par1[1])/(2*par1[0]*par1[0]))/par1[0]*par1[0]*par1[0]) ;
-      return res;
-   }
-   
-double plaw(double *x, double*par) {
-	double res = par[0]*pow(x[0],par[1]);
+// Exponential law
+// par[0] = C
+// par[1] = m_0
+// par[2] = T
+double expo_law(double *x , double *par)
+{
+	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
+	double res = par[0]*TMath::Power( par[2]*(par[1]+par[2]), -1)*x[0]*exp(- (m_T - par[1]) / par[2]);
+	return res;
+}
+
+
+// Boltzmann distribution
+// par[0] = C
+// par[1] = m_0
+// par[2] = T
+double boltzmann(double *x , double *par)
+{
+	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
+	// double res = par[0]*par[1]*par[1]*exp(- (m_T - par[1]) / par[2]);    // version avec m_T au carré et pas p_T au carré
+	double res = par[0]*x[0]*x[0]*exp(- (m_T - par[1]) / par[2]);
+	return res;
+}
+
+
+// Levy-Tsallis distribution
+// par[0] = C
+// par[1] = m
+// par[2] = T
+// par[3] = n
+double levy(double *x , double *par)
+{
+	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
+	double res = par[0]*(par[3]-1)*(par[3]-2)/(par[3]*par[2]*(par[3]*par[2]+par[1]*(par[3]-2))) *x[0]*TMath::Power(1+(m_T - par[1]) / (par[3]*par[2]) , - par[3]);
+	return res;
+}
+
+
+// Power law from [5] in biblio
+// par[0] = C
+// par[1] = p_0
+// par[2] = n
+double power_law_Five(double *x , double *par)
+{
+	double res = par[0]*4*(par[2]-1)*(par[2]-2)*TMath::Power(par[2]-3,-2)*TMath::Power(par[1],-2)*x[0]*TMath::Power(1+ x[0] / (par[1]* (par[2]-3)/2 ) , - par[2]);
+	return res;
+}
+
+
+// "Power law" distribution  from [7] in biblio
+// par[0] = C
+// par[1] = p0
+// par[2] = n
+double power_law_Seven(double *x, double*par) 
+{
+	double res = par[0]*x[0]*TMath::Power( 1 + TMath::Power(x[0] / par[1] , 2) , - par[2] );
 	return res ;
 }
 
-double bol(double *x, double*par) {
-	double res = par[0]*exp(-x[0]/par[1]);
-	return res ;
-}
 
 int main(){
 cout << " début " << endl ;
-
-		// Definition de la fonction de Boltzmann
-		
-
 
 		// Création du fichier root de sortie et récupération du fichier root données
 TString outputfilename="result.root" ;
@@ -88,34 +136,34 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
 	TH1F* H10_pp_SU10=(TH1F*)dirFile->Get("Hist1D_y10_e3");
 	
 		// Changement des noms d'axes et titres
-	H1_pp->SetNameTitle(" Distribution Pt 1 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H1_pp->SetNameTitle(" Distribution Pt 1 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H1_pp->SetXTitle("p_{T} [GeV/c]");
 	H1_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H2_pp->SetNameTitle(" Distribution Pt 2 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H2_pp->SetNameTitle(" Distribution Pt 2 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H2_pp->SetXTitle("p_{T} [GeV/c]");
 	H2_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H3_pp->SetNameTitle(" Distribution Pt 3 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H3_pp->SetNameTitle(" Distribution Pt 3 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H3_pp->SetXTitle("p_{T} [GeV/c]");
 	H3_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H4_pp->SetNameTitle(" Distribution Pt 4 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H4_pp->SetNameTitle(" Distribution Pt 4 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H4_pp->SetXTitle("p_{T} [GeV/c]");
 	H4_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H5_pp->SetNameTitle(" Distribution Pt 5 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H5_pp->SetNameTitle(" Distribution Pt 5 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H5_pp->SetXTitle("p_{T} [GeV/c]");
 	H5_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H6_pp->SetNameTitle(" Distribution Pt 6 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H6_pp->SetNameTitle(" Distribution Pt 6 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H6_pp->SetXTitle("p_{T} [GeV/c]");
 	H6_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H7_pp->SetNameTitle(" Distribution Pt 7 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H7_pp->SetNameTitle(" Distribution Pt 7 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H7_pp->SetXTitle("p_{T} [GeV/c]");
 	H7_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H8_pp->SetNameTitle(" Distribution Pt 8 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H8_pp->SetNameTitle(" Distribution Pt 8 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H8_pp->SetXTitle("p_{T} [GeV/c]");
 	H8_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H9_pp->SetNameTitle(" Distribution Pt 9 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H9_pp->SetNameTitle(" Distribution Pt 9 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H9_pp->SetXTitle("p_{T} [GeV/c]");
 	H9_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-	H10_pp->SetNameTitle(" Distribution Pt 10 " , " PT distributiond des pions lors de collisions Pb-PB " );
+	H10_pp->SetNameTitle(" Distribution Pt 10 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H10_pp->SetXTitle("p_{T} [GeV/c]");
 	H10_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
 	
@@ -139,6 +187,7 @@ for(int i = 0; i <= Nbinx  ; i++){
 	H10_pp->SetBinError(i, H10_pp_e10->GetBinContent(i) + H10_pp_E10->GetBinContent(i) + H10_pp_SU10->GetBinContent(i) ) ;
 	
 }
+
 
 
 		//Scaling en prépartion du fit
@@ -182,65 +231,138 @@ H9_pp->SetAxisRange(0,5,"X");
 H10_pp->SetAxisRange(0,5,"X");
 
 
+double a= H1_pp->GetBinLowEdge(1);
 		// Fit par rapport à la distribution de boltzmann
 		
-TF1 *func = new TF1("boltzmann",fitf,0,20,2);
-func->SetParameter(0,0.1);
-func->SetParameter(1,0.2);
-func->SetParNames("a","shift");
-func->SetLineColor(kViolet);
+TF1 *func1 = new TF1("expo_law",expo_law,a,20,3);
+func1->SetParameter(0,1);
+func1->SetParameter(1,0.1);
+func1->SetParameter(2,0.1);
+func1->SetParNames("C","m","T");
+func1->SetLineColor(kViolet);
 
-TF1 *func2 = new TF1("Plaw",plaw,0,20,2);
-func2->SetParameters(0,-1);
-func2->SetParNames("a","k");	// y = a*x^k
+TF1 *func2 = new TF1("boltzmann",boltzmann,a,20,3);
+func2->SetParameter(0,0.1);
+func2->SetParameter(1,0.1);
+func2->SetParameter(2,0.1);
+func2->SetParNames("C", "m", "T");	
 func2->SetLineColor(kGreen);
 
-TF1 *func3 = new TF1("bol",bol,0,20,2);
-func3->SetParameter(0,0.05);
-func3->SetParameter(1,0.01);
-func3->SetParNames("N","Kb*T");	// y = a*x^k
+TF1 *func3 = new TF1("levy",levy,a,20,4);
+func3->SetParameter(0,0.1);
+func3->SetParameter(1,0.1);
+func3->SetParameter(2,0.1);
+func3->SetParameter(3,2);
+func3->SetParNames("C","m","T","n");	
 func3->SetLineColor(kCyan);
 
-		// Sauvegarde des canvas dans l'output-histo-file càd notre result.root
+TF1 *func4 = new TF1("power_law_Five", power_law_Five,a,20,3);
+func4->SetParameter(0,0.1);
+func4->SetParameter(1,0.1);
+func4->SetParameter(2,1);
+func4->SetParNames("C","p0","n");	
+func4->SetLineColor(kMagenta);
+
+TF1 *func5 = new TF1("power_law_Seven", power_law_Seven ,a,20,3);
+func5->SetParameter(0,0.1);
+func5->SetParameter(1,0.1);
+func5->SetParameter(2,1);
+func5->SetParNames("C","p0","n");	
+func5->SetLineColor(kRed);
+
+
 
 		// Création des canvas
-TCanvas* T1 = new TCanvas("Canvas 1" , " CANVAS_1_PP1 " , 200 , 200 );
-TCanvas* T2 = new TCanvas("Canvas 2" , " CANVAS_2_PP1 " , 200 , 200 );
-TCanvas* T3 = new TCanvas("Canvas 3" , " CANVAS_3_PP1 " , 200 , 200 );
-TCanvas* T4 = new TCanvas("Canvas 4" , " CANVAS_4_PP1 " , 200 , 200 );
-TCanvas* T5 = new TCanvas("Canvas 5" , " CANVAS_5_PP1 " , 200 , 200 );
-TCanvas* T6 = new TCanvas("Canvas 6" , " CANVAS_6_PP1 " , 200 , 200 );
-TCanvas* T7 = new TCanvas("Canvas 7" , " CANVAS_7_PP1 " , 200 , 200 );
-TCanvas* T8 = new TCanvas("Canvas 8" , " CANVAS_8_PP1 " , 200 , 200 );
-TCanvas* T9 = new TCanvas("Canvas 9" , " CANVAS_9_PP1 " , 200 , 200 );
-TCanvas* T10 = new TCanvas("Canvas 10" , " CANVAS_10_PP1 " , 200 , 200 );
-		// Sauvegarde des canvas dans l'output-histo-file càd notre result.root
-		// Appels des différents fits
+TCanvas *T1 = new TCanvas("Canvas 1" , " CANVAS_1_PP1 " , 200 , 200 );
+T1->SetGrid();
+TCanvas *T2 = new TCanvas("Canvas 2" , " CANVAS_2_PP1 " , 200 , 200 );
+T2->SetGrid();
+TCanvas *T3 = new TCanvas("Canvas 3" , " CANVAS_3_PP1 " , 200 , 200 );
+T3->SetGrid();
+TCanvas *T4 = new TCanvas("Canvas 4" , " CANVAS_4_PP1 " , 200 , 200 );
+T4->SetGrid();
+TCanvas *T5 = new TCanvas("Canvas 5" , " CANVAS_5_PP1 " , 200 , 200 );
+T5->SetGrid();
+TCanvas *T6 = new TCanvas("Canvas 6" , " CANVAS_6_PP1 " , 200 , 200 );
+T6->SetGrid();
+TCanvas *T7 = new TCanvas("Canvas 7" , " CANVAS_7_PP1 " , 200 , 200 );
+T7->SetGrid();
+TCanvas *T8 = new TCanvas("Canvas 8" , " CANVAS_8_PP1 " , 200 , 200 );
+T8->SetGrid();
+TCanvas *T9 = new TCanvas("Canvas 9" , " CANVAS_9_PP1 " , 200 , 200 );
+T9->SetGrid();
+TCanvas *T10 = new TCanvas("Canvas 10" , " CANVAS_10_PP1 " , 200 , 200 );
+T10->SetGrid();
+
+TCanvas *D1 = new TCanvas("Canvas Distribution" , " CANVAS_DISTR " , 200 , 200 );
+D1->SetGrid();
+
+
+
+   
 gStyle->SetOptFit(0);
 gStyle->SetOptStat(1111);
 	
+
+		// Sauvegarde des canvas dans l'output-histo-file càd notre result.root
+		// Appels des différents fits
 OutputHisto->cd();
+
 
 T1->cd();
 H1_pp->Draw("][ E1");
-H1_pp->Fit("bol", "L" ,"SAME HIST",0 ,20);
-H1_pp->Fit("boltzmann", "L + I M R B" ,"SAME HIST",0 ,20);
-H1_pp->Fit("Plaw","L + I R B","SAME HIST",0,20);
-H1_pp->GetFunction("Plaw")->SetLineColor(kGreen);
-H1_pp->GetFunction("boltzmann")->SetLineColor(kViolet);
-H1_pp->GetFunction("bol")->SetLineColor(kCyan);
+// We fit the data with the different fitting functions
+
+H1_pp->Fit("expo_law","L + I R","SAME HIST",0,20);   
+H1_pp->Fit("boltzmann","L + I R","SAME HIST",0,20);
+H1_pp->Fit("levy","L + I R","SAME HIST",0,20);
+//H1_pp->Fit("power_law_Five","L + I R","SAME HIST",0,20);
+H1_pp->Fit("power_law_Seven","L + I R","SAME HIST",0,20);
+cout << "check line" << " " << __LINE__ << endl;
+
+H1_pp->GetFunction("expo_law")->SetLineColor(kViolet);
+H1_pp->GetFunction("boltzmann")->SetLineColor(kGreen);
+H1_pp->GetFunction("levy")->SetLineColor(kCyan);
+//H1_pp->GetFunction("power_law_Five")->SetLineColor(kMagenta);
+H1_pp->GetFunction("power_law_Seven")->SetLineColor(kRed);
+
+   TLatex latex;
+   latex.SetNDC();
+   latex.SetTextSize(0.025);
+   latex.SetTextAlign(13);  //align at top
+   latex.SetTextFont(72);
+   latex.DrawLatex(0.4,0.65, TString::Format("Expo law par 0 = %g", func1->GetParameter(0)));
+   latex.DrawLatex(0.4,0.60, TString::Format("Expo law par 1 = %g", func1->GetParameter(1)));
+   latex.DrawLatex(0.4,0.55, TString::Format("Expo law par 2 = %g", func1->GetParameter(2)));
+   
+
+T1->Update();
 		// Configuration de la légende
 auto legend = new TLegend(0.4,0.7,0.6,0.9);
 //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
 legend->AddEntry(H1_pp,"Data","lep");
-legend->AddEntry(func,"Maxwell-Boltzmann fit","l");
-legend->AddEntry(func2,"Power law fit","l");
-legend->AddEntry(func3,"Boltzmann fit","l");
-legend->Draw();
+legend->AddEntry(func1,"Exponential law fit","l");
+legend->AddEntry(func2,"Boltzmann law fit","l");
+legend->AddEntry(func3,"Levy-Tsallis fit","l");
+legend->AddEntry(func4, "Power law fit from [5]", "l");
+legend->AddEntry(func5, "Power law fit from [7]", "l");
+legend->Draw("SAMES");
 
 T1->Write();
 
+D1->cd();
 
+func3->SetParameter(0,func3->GetParameter(0)) ;
+func3->SetParameter(1,func3->GetParameter(1)) ;
+func3->SetParameter(2,func3->GetParameter(2)) ;
+
+cout << "test parametre func 1 " << func3->GetParameter(0) << endl;
+
+func3->Draw();
+
+D1->Write();
+
+/*
 T2->cd();
 H2_pp->Draw("][ E1");
 H2_pp->Fit("expo", "L" ,"SAME HIST",0 ,20);
@@ -346,9 +468,7 @@ H10_pp->GetFunction("Plaw")->SetLineColor(kGreen);
 H10_pp->GetFunction("boltzmann")->SetLineColor(kViolet);
 H10_pp->GetFunction("expo")->SetLineColor(kCyan);
 legend->Draw();
-
-T10->Write();
-
+*/
 
 OutputHisto->Close();
 
