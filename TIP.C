@@ -83,15 +83,16 @@ cout << " début " << endl ;
 		// Création du fichier root de sortie et récupération du fichier root données
 TString outputfilename="result.root" ;
 TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
-TFile *myFile = new TFile("HEPData-1569102768-v1-root.root");
+TFile *myFile = new TFile("HEPData-ins1762368-v1-root.root");
 
 
 		
 		// Récupération des différents histogrammes 
-TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
+TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 3");
 
 
 	TH1F* H1_pp=(TH1F*)dirFile->Get("Hist1D_y1");
+	/*
 	TH1F* H2_pp=(TH1F*)dirFile->Get("Hist1D_y2");
 	TH1F* H3_pp=(TH1F*)dirFile->Get("Hist1D_y3");
 	TH1F* H4_pp=(TH1F*)dirFile->Get("Hist1D_y4");
@@ -101,8 +102,9 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
 	TH1F* H8_pp=(TH1F*)dirFile->Get("Hist1D_y8");
 	TH1F* H9_pp=(TH1F*)dirFile->Get("Hist1D_y9");
 	TH1F* H10_pp=(TH1F*)dirFile->Get("Hist1D_y10");
-
+*/
 	TH1F* H1_pp_e1=(TH1F*)dirFile->Get("Hist1D_y1_e1");
+	/*
 	TH1F* H2_pp_e2=(TH1F*)dirFile->Get("Hist1D_y2_e1");
 	TH1F* H3_pp_e3=(TH1F*)dirFile->Get("Hist1D_y3_e1");
 	TH1F* H4_pp_e4=(TH1F*)dirFile->Get("Hist1D_y4_e1");
@@ -112,8 +114,9 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
 	TH1F* H8_pp_e8=(TH1F*)dirFile->Get("Hist1D_y8_e1");
 	TH1F* H9_pp_e9=(TH1F*)dirFile->Get("Hist1D_y9_e1");
 	TH1F* H10_pp_e10=(TH1F*)dirFile->Get("Hist1D_y10_e1");
-	
+	*/
 	TH1F* H1_pp_E1=(TH1F*)dirFile->Get("Hist1D_y1_e2");
+	/*
 	TH1F* H2_pp_E2=(TH1F*)dirFile->Get("Hist1D_y2_e2");
 	TH1F* H3_pp_E3=(TH1F*)dirFile->Get("Hist1D_y3_e2");
 	TH1F* H4_pp_E4=(TH1F*)dirFile->Get("Hist1D_y4_e2");
@@ -123,7 +126,8 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
 	TH1F* H8_pp_E8=(TH1F*)dirFile->Get("Hist1D_y8_e2");
 	TH1F* H9_pp_E9=(TH1F*)dirFile->Get("Hist1D_y9_e2");
 	TH1F* H10_pp_E10=(TH1F*)dirFile->Get("Hist1D_y10_e2");
-	
+	*/
+	/*
 	TH1F* H1_pp_SU1=(TH1F*)dirFile->Get("Hist1D_y1_e3");
 	TH1F* H2_pp_SU2=(TH1F*)dirFile->Get("Hist1D_y2_e3");
 	TH1F* H3_pp_SU3=(TH1F*)dirFile->Get("Hist1D_y3_e3");
@@ -134,11 +138,13 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
 	TH1F* H8_pp_SU8=(TH1F*)dirFile->Get("Hist1D_y8_e3");
 	TH1F* H9_pp_SU9=(TH1F*)dirFile->Get("Hist1D_y9_e3");
 	TH1F* H10_pp_SU10=(TH1F*)dirFile->Get("Hist1D_y10_e3");
+	*/
 	
 		// Changement des noms d'axes et titres
-	H1_pp->SetNameTitle(" Distribution Pt 1 " , " PT distribution des pions lors de collisions Pb-PB " );
+	H1_pp->SetNameTitle(" Table 4 phi-meson" , "pT-distributions of phi-meson measured in p-pbar collisions at sNN = 5.02 TeV." );
 	H1_pp->SetXTitle("p_{T} [GeV/c]");
 	H1_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
+	/*
 	H2_pp->SetNameTitle(" Distribution Pt 2 " , " PT distribution des pions lors de collisions Pb-PB " );
 	H2_pp->SetXTitle("p_{T} [GeV/c]");
 	H2_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
@@ -167,7 +173,7 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 1");
 	H10_pp->SetXTitle("p_{T} [GeV/c]");
 	H10_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
 	
-	
+	*/
 		// Compilations des différentes erreurs et ajout sur l'histogramme PT
 
 int Nbinx = H1_pp->GetNbinsX();
@@ -175,16 +181,18 @@ cout << " number of bin = " << Nbinx << endl;
 
 
 for(int i = 0; i <= Nbinx  ; i++){
-	H1_pp->SetBinError(i, H1_pp_e1->GetBinContent(i) + H1_pp_E1->GetBinContent(i) + H1_pp_SU1->GetBinContent(i) ) ;
-	H2_pp->SetBinError(i, H2_pp_e2->GetBinContent(i) + H2_pp_E2->GetBinContent(i) + H2_pp_SU2->GetBinContent(i) ) ;
-	H3_pp->SetBinError(i, H3_pp_e3->GetBinContent(i) + H3_pp_E3->GetBinContent(i) + H3_pp_SU3->GetBinContent(i) ) ;
-	H4_pp->SetBinError(i, H4_pp_e4->GetBinContent(i) + H4_pp_E4->GetBinContent(i) + H4_pp_SU4->GetBinContent(i) ) ;
-	H5_pp->SetBinError(i, H5_pp_e5->GetBinContent(i) + H5_pp_E5->GetBinContent(i) + H5_pp_SU5->GetBinContent(i) ) ;
-	H6_pp->SetBinError(i, H6_pp_e6->GetBinContent(i) + H6_pp_E6->GetBinContent(i) + H6_pp_SU6->GetBinContent(i) ) ;
-	H7_pp->SetBinError(i, H7_pp_e7->GetBinContent(i) + H7_pp_E7->GetBinContent(i) + H7_pp_SU7->GetBinContent(i) ) ;
-	H8_pp->SetBinError(i, H8_pp_e8->GetBinContent(i) + H8_pp_E8->GetBinContent(i) + H8_pp_SU8->GetBinContent(i) ) ;
-	H9_pp->SetBinError(i, H9_pp_e9->GetBinContent(i) + H9_pp_E9->GetBinContent(i) + H9_pp_SU9->GetBinContent(i) ) ;
-	H10_pp->SetBinError(i, H10_pp_e10->GetBinContent(i) + H10_pp_E10->GetBinContent(i) + H10_pp_SU10->GetBinContent(i) ) ;
+	H1_pp->SetBinError(i, H1_pp_e1->GetBinContent(i) + H1_pp_E1->GetBinContent(i) ) ;
+	/*
+	H2_pp->SetBinError(i, H2_pp_e2->GetBinContent(i) + H2_pp_E2->GetBinContent(i) ) ;
+	H3_pp->SetBinError(i, H3_pp_e3->GetBinContent(i) + H3_pp_E3->GetBinContent(i) ) ;
+	H4_pp->SetBinError(i, H4_pp_e4->GetBinContent(i) + H4_pp_E4->GetBinContent(i) ) ;
+	H5_pp->SetBinError(i, H5_pp_e5->GetBinContent(i) + H5_pp_E5->GetBinContent(i) ) ;
+	H6_pp->SetBinError(i, H6_pp_e6->GetBinContent(i) + H6_pp_E6->GetBinContent(i) ) ;
+	H7_pp->SetBinError(i, H7_pp_e7->GetBinContent(i) + H7_pp_E7->GetBinContent(i) ) ;
+	H8_pp->SetBinError(i, H8_pp_e8->GetBinContent(i) + H8_pp_E8->GetBinContent(i) ) ;
+	H9_pp->SetBinError(i, H9_pp_e9->GetBinContent(i) + H9_pp_E9->GetBinContent(i) ) ;
+	H10_pp->SetBinError(i, H10_pp_e10->GetBinContent(i) + H10_pp_E10->GetBinContent(i)  ) ;
+	*/
 	
 }
 
@@ -194,6 +202,7 @@ for(int i = 0; i <= Nbinx  ; i++){
 
 double Scale_Histo[11] ;
 Scale_Histo[1]=H1_pp->Integral() ;
+/*
 Scale_Histo[2]=H2_pp->Integral() ;
 Scale_Histo[3]=H3_pp->Integral() ;
 Scale_Histo[4]=H4_pp->Integral() ;
@@ -203,9 +212,15 @@ Scale_Histo[7]=H7_pp->Integral() ;
 Scale_Histo[8]=H8_pp->Integral() ;
 Scale_Histo[9]=H9_pp->Integral() ;
 Scale_Histo[10]=H10_pp->Integral() ;
+*/
 
+cout << " Scale Histo 1 = "<< H1_pp->Integral("width") << endl;
 
-H1_pp->Scale(1/H1_pp->Integral());
+H1_pp->Scale(1/H1_pp->Integral("width"));
+
+cout << " Scale after = " << H1_pp->Integral("width") << endl;
+		// Changement de range sur l'axe X
+		/*
 H2_pp->Scale(1/H2_pp->Integral());
 H3_pp->Scale(1/H3_pp->Integral());
 H4_pp->Scale(1/H4_pp->Integral());
@@ -215,11 +230,11 @@ H7_pp->Scale(1/H7_pp->Integral());
 H8_pp->Scale(1/H8_pp->Integral());
 H9_pp->Scale(1/H9_pp->Integral());
 H10_pp->Scale(1/H10_pp->Integral());
+*/
 
-
-		// Changement de range sur l'axe X
 		
-H1_pp->SetAxisRange(0,5,"X");
+H1_pp->SetAxisRange(0,20,"X");
+/*
 H2_pp->SetAxisRange(0,5,"X");
 H3_pp->SetAxisRange(0,5,"X");
 H4_pp->SetAxisRange(0,5,"X");
@@ -229,9 +244,13 @@ H7_pp->SetAxisRange(0,5,"X");
 H8_pp->SetAxisRange(0,5,"X");
 H9_pp->SetAxisRange(0,5,"X");
 H10_pp->SetAxisRange(0,5,"X");
+*/
 
 
 double a= H1_pp->GetBinLowEdge(1);
+double c= H1_pp->GetBinLowEdge(Nbinx);
+c=c+H1_pp->GetBinWidth(Nbinx);
+cout << " check bin up edge " << c << endl;
 		// Fit par rapport à la distribution de boltzmann
 		
 TF1 *func1 = new TF1("expo_law",expo_law,a,20,3);
@@ -242,29 +261,31 @@ func1->SetParNames("C","m","T");
 func1->SetLineColor(kViolet);
 
 TF1 *func2 = new TF1("boltzmann",boltzmann,a,20,3);
-func2->SetParameter(0,0.1);
+func2->SetParameter(0,1);
 func2->SetParameter(1,0.1);
 func2->SetParameter(2,0.1);
 func2->SetParNames("C", "m", "T");	
 func2->SetLineColor(kGreen);
 
 TF1 *func3 = new TF1("levy",levy,a,20,4);
-func3->SetParameter(0,0.1);
-func3->SetParameter(1,0.1);
-func3->SetParameter(2,0.1);
-func3->SetParameter(3,2);
+func3->SetParameter(0,1);
+func3->SetParameter(1,0.938);
+//func3->SetParLimits(1, 0.938,0.938);
+func3->SetParameter(2,0.4);
+func3->SetParameter(3,3);
 func3->SetParNames("C","m","T","n");	
+func3->SetParLimits(3, 1.01 , 10);
 func3->SetLineColor(kCyan);
 
 TF1 *func4 = new TF1("power_law_Five", power_law_Five,a,20,3);
-func4->SetParameter(0,0.1);
+func4->SetParameter(0,1);
 func4->SetParameter(1,0.1);
 func4->SetParameter(2,1);
 func4->SetParNames("C","p0","n");	
 func4->SetLineColor(kMagenta);
 
 TF1 *func5 = new TF1("power_law_Seven", power_law_Seven ,a,20,3);
-func5->SetParameter(0,0.1);
+func5->SetParameter(0,1);
 func5->SetParameter(1,0.1);
 func5->SetParameter(2,1);
 func5->SetParNames("C","p0","n");	
@@ -275,6 +296,7 @@ func5->SetLineColor(kRed);
 		// Création des canvas
 TCanvas *T1 = new TCanvas("Canvas 1" , " CANVAS_1_PP1 " , 200 , 200 );
 T1->SetGrid();
+/*
 TCanvas *T2 = new TCanvas("Canvas 2" , " CANVAS_2_PP1 " , 200 , 200 );
 T2->SetGrid();
 TCanvas *T3 = new TCanvas("Canvas 3" , " CANVAS_3_PP1 " , 200 , 200 );
@@ -293,8 +315,8 @@ TCanvas *T9 = new TCanvas("Canvas 9" , " CANVAS_9_PP1 " , 200 , 200 );
 T9->SetGrid();
 TCanvas *T10 = new TCanvas("Canvas 10" , " CANVAS_10_PP1 " , 200 , 200 );
 T10->SetGrid();
-
-TCanvas *D1 = new TCanvas("Canvas Distribution" , " CANVAS_DISTR " , 200 , 200 );
+*/
+TCanvas *D1 = new TCanvas("Canvas Distribution" , " CANVAS_DISTR " , 2000 , 2000 );
 D1->SetGrid();
 
 
@@ -313,40 +335,52 @@ T1->cd();
 H1_pp->Draw("][ E1");
 // We fit the data with the different fitting functions
 
-H1_pp->Fit("expo_law","L + I R","SAME HIST",0,20);   
-H1_pp->Fit("boltzmann","L + I R","SAME HIST",0,20);
-H1_pp->Fit("levy","L + I R","SAME HIST",0,20);
-//H1_pp->Fit("power_law_Five","L + I R","SAME HIST",0,20);
-H1_pp->Fit("power_law_Seven","L + I R","SAME HIST",0,20);
-cout << "check line" << " " << __LINE__ << endl;
+//H1_pp->Fit("expo_law","+ R ","SAMES HIST",0,20);   
+//H1_pp->Fit("boltzmann","+ R ","SAMES HIST",0,20);
+H1_pp->Fit("levy","+ R L","SAMES HIST",0,20);
+//H1_pp->Fit("power_law_Five","+ R L ","SAMES HIST",0,20);
+//H1_pp->Fit("power_law_Seven","+ R ","SAMES HIST",0,20);
 
-H1_pp->GetFunction("expo_law")->SetLineColor(kViolet);
-H1_pp->GetFunction("boltzmann")->SetLineColor(kGreen);
+//H1_pp->GetFunction("expo_law")->SetLineColor(kViolet);
+//H1_pp->GetFunction("boltzmann")->SetLineColor(kGreen);
 H1_pp->GetFunction("levy")->SetLineColor(kCyan);
 //H1_pp->GetFunction("power_law_Five")->SetLineColor(kMagenta);
-H1_pp->GetFunction("power_law_Seven")->SetLineColor(kRed);
-
+//H1_pp->GetFunction("power_law_Seven")->SetLineColor(kRed);
    TLatex latex;
    latex.SetNDC();
-   latex.SetTextSize(0.025);
+   latex.SetTextSize(0.020);
    latex.SetTextAlign(13);  //align at top
-   latex.SetTextFont(72);
-   latex.DrawLatex(0.4,0.65, TString::Format("Expo law par 0 = %g", func1->GetParameter(0)));
-   latex.DrawLatex(0.4,0.60, TString::Format("Expo law par 1 = %g", func1->GetParameter(1)));
-   latex.DrawLatex(0.4,0.55, TString::Format("Expo law par 2 = %g", func1->GetParameter(2)));
+   latex.SetTextFont(60);
    
+ 
+   latex.DrawLatex(0.5,0.65, TString::Format("Parametre Levy C= %g", func3->GetParameter(0)));
+   latex.DrawLatex(0.5,0.625, TString::Format("Parametre Levy m= %g GeV/c", func3->GetParameter(1)));
+   latex.DrawLatex(0.5,0.60, TString::Format("Parametre Levy T= %g GeV", func3->GetParameter(2)));
+   latex.DrawLatex(0.5,0.575, TString::Format("Parametre Levy n= %g ", func3->GetParameter(3)));
+ 
+  
+ /*  latex.DrawLatex(0.5,0.65, TString::Format("Parametre expo C= %g", func1->GetParameter(0)));
+   latex.DrawLatex(0.5,0.625, TString::Format("Parametre expo m_0= %g GeV/c", func1->GetParameter(1)));
+   latex.DrawLatex(0.5,0.60, TString::Format("Parametre expo T= %g GeV/c", func1->GetParameter(2)));
+ 
+   latex.DrawLatex(0.5,0.45, TString::Format("Parametre boltzmann C= %g", func2->GetParameter(0)));
+   latex.DrawLatex(0.5,0.425, TString::Format("Parametre boltzmann m_0= %g GeV/c", func2->GetParameter(1)));
+   latex.DrawLatex(0.5,0.40, TString::Format("Parametre boltzmann T= %g GeV/c", func2->GetParameter(2)));
+ */
 
 T1->Update();
 		// Configuration de la légende
 auto legend = new TLegend(0.4,0.7,0.6,0.9);
 //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
 legend->AddEntry(H1_pp,"Data","lep");
-legend->AddEntry(func1,"Exponential law fit","l");
-legend->AddEntry(func2,"Boltzmann law fit","l");
+//legend->AddEntry(func1,"Exponential law fit","l");
+//legend->AddEntry(func2,"Boltzmann law fit","l");
 legend->AddEntry(func3,"Levy-Tsallis fit","l");
-legend->AddEntry(func4, "Power law fit from [5]", "l");
-legend->AddEntry(func5, "Power law fit from [7]", "l");
+//legend->AddEntry(func4, "Power law fit from [5]", "l");
+//legend->AddEntry(func5, "Power law fit from [7]", "l");
 legend->Draw("SAMES");
+
+H1_pp->SetAxisRange(0,6,"X");
 
 T1->Write();
 
@@ -355,10 +389,13 @@ D1->cd();
 func3->SetParameter(0,func3->GetParameter(0)) ;
 func3->SetParameter(1,func3->GetParameter(1)) ;
 func3->SetParameter(2,func3->GetParameter(2)) ;
-
-cout << "test parametre func 1 " << func3->GetParameter(0) << endl;
-
+func3->SetRange(0,20);
+func3->SetNpx(10000);
 func3->Draw();
+cout << " Scale after = " << H1_pp->Integral("width") << endl;
+double_t b= func3->Integral(0,20,1E-12);
+cout << " integral value = " << b << endl;
+
 
 D1->Write();
 
