@@ -14,7 +14,10 @@
 #include <TROOT.h>
 #include <TGraphErrors.h>
 #include <TArrow.h>
+#include "TFile.h"
+#include "TH1.h"
 
+using namespace std;
 		// Definition de la fonction de Boltzmann
 		
 // Exponential law
@@ -24,7 +27,7 @@
 double expo_law(double *x , double *par)
 {
 	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
-	double res = par[0]*TMath::Power( par[2]*(par[1]+par[2]), -1)*x[0]*exp(- (m_T - par[1]) / par[2]);
+	double res = par[0]*pow( par[2]*(par[1]+par[2]), -1)*x[0]*exp(- (m_T - par[1]) / par[2]);
 	return res;
 }
 
@@ -50,7 +53,7 @@ double boltzmann(double *x , double *par)
 double levy(double *x , double *par)
 {
 	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
-	double res = par[0]*(par[3]-1)*(par[3]-2)/(par[3]*par[2]*(par[3]*par[2]+par[1]*(par[3]-2))) *x[0]*TMath::Power(1+(m_T - par[1]) / (par[3]*par[2]) , - par[3]);
+	double res = par[0]*(par[3]-1)*(par[3]-2)/(par[3]*par[2]*(par[3]*par[2]+par[1]*(par[3]-2))) *x[0]*pow(1+(m_T - par[1]) / (par[3]*par[2]) , - par[3]);
 	return res;
 }
 
@@ -61,7 +64,7 @@ double levy(double *x , double *par)
 // par[2] = n
 double power_law_Five(double *x , double *par)
 {
-	double res = par[0]*4*(par[2]-1)*(par[2]-2)*TMath::Power(par[2]-3,-2)*TMath::Power(par[1],-2)*x[0]*TMath::Power(1+ x[0] / (par[1]* (par[2]-3)/2 ) , - par[2]);
+	double res = par[0]*4*(par[2]-1)*(par[2]-2)*pow(par[2]-3,-2)*pow(par[1],-2)*x[0]*pow(1+ x[0] / (par[1]* (par[2]-3)/2 ) , - par[2]);
 	return res;
 }
 
@@ -72,7 +75,7 @@ double power_law_Five(double *x , double *par)
 // par[2] = n
 double power_law_Seven(double *x, double*par) 
 {
-	double res = par[0]*x[0]*TMath::Power( 1 + TMath::Power(x[0] / par[1] , 2) , - par[2] );
+	double res = par[0]*x[0]*pow( 1 + pow(x[0] / par[1] , 2) , - par[2] );
 	return res ;
 }
 
@@ -83,15 +86,16 @@ cout << " début " << endl ;
 		// Création du fichier root de sortie et récupération du fichier root données
 TString outputfilename="result.root" ;
 TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
-TFile *myFile = new TFile("HEPData-ins1762368-v1-root.root");
+TFile *myFile = new TFile("HEPData-1569102768-v1-root.root");
 
 
 		
 		// Récupération des différents histogrammes 
-TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 3");
+TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 6");
 
 
 	TH1F* H1_pp=(TH1F*)dirFile->Get("Hist1D_y1");
+	TGraph* H1_pp_Error=(TGraph*)dirFile->Get("Graph1D_y1");
 	/*
 	TH1F* H2_pp=(TH1F*)dirFile->Get("Hist1D_y2");
 	TH1F* H3_pp=(TH1F*)dirFile->Get("Hist1D_y3");
@@ -181,7 +185,9 @@ cout << " number of bin = " << Nbinx << endl;
 
 
 for(int i = 0; i <= Nbinx  ; i++){
-	H1_pp->SetBinError(i, H1_pp_e1->GetBinContent(i) + H1_pp_E1->GetBinContent(i) ) ;
+	//H1_pp->SetBinError(i, 1) ;
+	//H1_pp->SetBinError(i, H1_pp_e1->GetBinContent(i) + H1_pp_E1->GetBinContent(i) ) ;
+	H1_pp->SetBinError(i, pow((pow(H1_pp_e1->GetBinContent(i),2) + pow(H1_pp_E1->GetBinContent(i),2)),0.5)) ;
 	/*
 	H2_pp->SetBinError(i, H2_pp_e2->GetBinContent(i) + H2_pp_E2->GetBinContent(i) ) ;
 	H3_pp->SetBinError(i, H3_pp_e3->GetBinContent(i) + H3_pp_E3->GetBinContent(i) ) ;
@@ -195,13 +201,10 @@ for(int i = 0; i <= Nbinx  ; i++){
 	*/
 	
 }
-
-
-
 		//Scaling en prépartion du fit
 
 double Scale_Histo[11] ;
-Scale_Histo[1]=H1_pp->Integral() ;
+Scale_Histo[1]=H1_pp->Integral("width") ;
 /*
 Scale_Histo[2]=H2_pp->Integral() ;
 Scale_Histo[3]=H3_pp->Integral() ;
@@ -212,13 +215,14 @@ Scale_Histo[7]=H7_pp->Integral() ;
 Scale_Histo[8]=H8_pp->Integral() ;
 Scale_Histo[9]=H9_pp->Integral() ;
 Scale_Histo[10]=H10_pp->Integral() ;
-*/
 
+*/
 cout << " Scale Histo 1 = "<< H1_pp->Integral("width") << endl;
 
 H1_pp->Scale(1/H1_pp->Integral("width"));
 
 cout << " Scale after = " << H1_pp->Integral("width") << endl;
+
 		// Changement de range sur l'axe X
 		/*
 H2_pp->Scale(1/H2_pp->Integral());
@@ -248,26 +252,26 @@ H10_pp->SetAxisRange(0,5,"X");
 
 
 double a= H1_pp->GetBinLowEdge(1);
-double c= H1_pp->GetBinLowEdge(Nbinx);
-c=c+H1_pp->GetBinWidth(Nbinx);
-cout << " check bin up edge " << c << endl;
+double b= H1_pp->GetBinLowEdge(Nbinx);
+b=b+H1_pp->GetBinWidth(Nbinx);
+cout << " check bin up edge " << b << endl;
 		// Fit par rapport à la distribution de boltzmann
 		
-TF1 *func1 = new TF1("expo_law",expo_law,a,20,3);
-func1->SetParameter(0,1);
+TF1 *func1 = new TF1("expo_law",expo_law,a,b,3);
+func1->SetParameter(0,0.1);
 func1->SetParameter(1,0.1);
 func1->SetParameter(2,0.1);
 func1->SetParNames("C","m","T");
 func1->SetLineColor(kViolet);
 
-TF1 *func2 = new TF1("boltzmann",boltzmann,a,20,3);
+TF1 *func2 = new TF1("boltzmann",boltzmann,a,b,3);
 func2->SetParameter(0,1);
 func2->SetParameter(1,0.1);
 func2->SetParameter(2,0.1);
 func2->SetParNames("C", "m", "T");	
 func2->SetLineColor(kGreen);
 
-TF1 *func3 = new TF1("levy",levy,a,20,4);
+TF1 *func3 = new TF1("levy",levy,a,b,4);
 func3->SetParameter(0,1);
 func3->SetParameter(1,0.938);
 //func3->SetParLimits(1, 0.938,0.938);
@@ -277,14 +281,14 @@ func3->SetParNames("C","m","T","n");
 func3->SetParLimits(3, 1.01 , 10);
 func3->SetLineColor(kCyan);
 
-TF1 *func4 = new TF1("power_law_Five", power_law_Five,a,20,3);
+TF1 *func4 = new TF1("power_law_Five", power_law_Five,a,b,3);
 func4->SetParameter(0,1);
 func4->SetParameter(1,0.1);
 func4->SetParameter(2,1);
 func4->SetParNames("C","p0","n");	
 func4->SetLineColor(kMagenta);
 
-TF1 *func5 = new TF1("power_law_Seven", power_law_Seven ,a,20,3);
+TF1 *func5 = new TF1("power_law_Seven", power_law_Seven ,a,b,3);
 func5->SetParameter(0,1);
 func5->SetParameter(1,0.1);
 func5->SetParameter(2,1);
@@ -335,14 +339,32 @@ T1->cd();
 H1_pp->Draw("][ E1");
 // We fit the data with the different fitting functions
 
-//H1_pp->Fit("expo_law","+ R ","SAMES HIST",0,20);   
-//H1_pp->Fit("boltzmann","+ R ","SAMES HIST",0,20);
-H1_pp->Fit("levy","+ R L","SAMES HIST",0,20);
-//H1_pp->Fit("power_law_Five","+ R L ","SAMES HIST",0,20);
-//H1_pp->Fit("power_law_Seven","+ R ","SAMES HIST",0,20);
+H1_pp->Fit("expo_law","+ R L","SAMES HIST",a,b);  
+double chi2 = func1->GetChisquare();
+double ndf = func1->GetNDF();
+double chindf = chi2/ndf ;
+cout <<" Chi square expo = "<< chi2 << endl; 
+cout <<" NDF expo = "<< ndf << endl; 
+cout <<" Chi2 / ndf = " << chindf << endl;
+H1_pp->Fit("boltzmann","+ R L","SAMES HIST",a,b);
+chi2 = func2->GetChisquare();
+ndf = func2->GetNDF();
+chindf = chi2/ndf ;
+cout <<" Chi square boltz = "<< chi2 << endl;
+cout <<" NDF boltz = "<< ndf << endl; 
+cout <<" Chi2 / ndf = " << chindf << endl;
+H1_pp->Fit("levy","+ R L","SAMES HIST",a,b);
+chi2 = func3->GetChisquare();
+ndf = func3->GetNDF();
+chindf = chi2/ndf ;
+cout <<" Chi square lévy = "<< chi2 << endl;
+cout <<" NDF lévy = "<< ndf << endl; 
+cout <<" Chi2 / ndf = " << chindf << endl;
+//H1_pp->Fit("power_law_Five","+ R L ","SAMES HIST",a,b);
+//H1_pp->Fit("power_law_Seven","+ R ","SAMES HIST",a,b);
 
-//H1_pp->GetFunction("expo_law")->SetLineColor(kViolet);
-//H1_pp->GetFunction("boltzmann")->SetLineColor(kGreen);
+H1_pp->GetFunction("expo_law")->SetLineColor(kViolet);
+H1_pp->GetFunction("boltzmann")->SetLineColor(kGreen);
 H1_pp->GetFunction("levy")->SetLineColor(kCyan);
 //H1_pp->GetFunction("power_law_Five")->SetLineColor(kMagenta);
 //H1_pp->GetFunction("power_law_Seven")->SetLineColor(kRed);
@@ -373,18 +395,19 @@ T1->Update();
 auto legend = new TLegend(0.4,0.7,0.6,0.9);
 //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
 legend->AddEntry(H1_pp,"Data","lep");
-//legend->AddEntry(func1,"Exponential law fit","l");
-//legend->AddEntry(func2,"Boltzmann law fit","l");
+legend->AddEntry(func1,"Exponential law fit","l");
+legend->AddEntry(func2,"Boltzmann law fit","l");
 legend->AddEntry(func3,"Levy-Tsallis fit","l");
 //legend->AddEntry(func4, "Power law fit from [5]", "l");
 //legend->AddEntry(func5, "Power law fit from [7]", "l");
 legend->Draw("SAMES");
 
-H1_pp->SetAxisRange(0,6,"X");
+H1_pp->SetAxisRange(0,20,"X");
 
 T1->Write();
 
 D1->cd();
+
 
 func3->SetParameter(0,func3->GetParameter(0)) ;
 func3->SetParameter(1,func3->GetParameter(1)) ;
@@ -393,8 +416,10 @@ func3->SetRange(0,20);
 func3->SetNpx(10000);
 func3->Draw();
 cout << " Scale after = " << H1_pp->Integral("width") << endl;
-double_t b= func3->Integral(0,20,1E-12);
-cout << " integral value = " << b << endl;
+double_t c= func3->Integral(0,20,1E-12);
+double_t d= func3->Integral(a,20,1E-12);
+cout << " integral 0-20 value = " << c << endl;
+cout << " integral a-20 value = " << d << endl;
 
 
 D1->Write();
