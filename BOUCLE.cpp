@@ -1,4 +1,5 @@
 #include <TH2.h>
+#include <string.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TLatex.h>
@@ -22,6 +23,8 @@
 #include <TLegend.h>
 #include <TGraph.h>
 #include <TMinuit.h>
+#include <TMultiGraph.h>
+#include <fstream>
 
 #if defined(__GLIBCXX__)
 #pragma link C++ class MyOtherClass;
@@ -33,7 +36,27 @@ using namespace std;
 
 
 TH1F *hist =0 ;
+TH1F *H1_pp_e1 = 0;
+TH1F *H1_pp_E1 = 0;
 
+double simpson(double f(double*,double*), double *par, double a, double b, int n)   
+{
+    double h = (b-a) / n;    // definition of the integration step
+    double z = 0;           // initialize the variable
+    // we define different pointers that we will use as input parameters for our f function
+    double *x = new double;  
+    double *x1 = new double;
+    double *x2 = new double;
+    for(int i = 0; i <= n-1  ; i++)
+    {
+        x[0] = a + i*h;   // x_i
+        x1[0] = a + (2*i+1)*h/2;  // ( x_{i} + x_{i+1} ) / 2
+        x2[0] = a + (i+1)*h;   // x_{i+1}
+        z = z + f(x, par) + 4*f(x1,par) + f(x2 , par);
+        //cout << "Simpson iteration " << i << endl;
+    }
+    return h*z/6;
+}
 
 
 double expo( double x , double *par)
@@ -74,10 +97,10 @@ double boltzmann(double *x , double *par)
 // par[2] = T
 // par[3] = n
 
-double levyT(double x , double *par)
+double levyPT(double *x , double *par)
 {
-	double m_T = sqrt(x*x + par[1]*par[1]);
-	double res = par[0]*(par[3]-1)*(par[3]-2)/(par[3]*par[2]*(par[3]*par[2]+par[1]*(par[3]-2))) *x*TMath::Power(1+(m_T - par[1]) / (par[3]*par[2]) , - par[3]);
+	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
+	double res = x[0]*par[0]*(par[3]-1)*(par[3]-2)/(par[3]*par[2]*(par[3]*par[2]+par[1]*(par[3]-2))) *x[0]*TMath::Power(1+(m_T - par[1]) / (par[3]*par[2]) , - par[3]);
 	return res;
 }
 
@@ -126,9 +149,9 @@ double blast_wave(double *x , double *par)
 // we define the variables and parameters
 	double a = 0.0;
 	//double R = 12*TMath::Power(10, -15);
-	double R = 360 ;
-	double b = R;
-	int n = 100;	
+	double R = 12 ;
+	double b = 1.0;
+	int n = 500;	
 	double m_T = TMath::Sqrt(par[1]*par[1] + x[0]*x[0]);
 // we integrate over r
 	double h = (b-a) / n;
@@ -139,16 +162,15 @@ double blast_wave(double *x , double *par)
 	    r_0 = a + i*h;   // x_i
 	    r_1 = a + (2*i+1)*h/2;  // ( x_{i} + x_{i+1} ) / 2               
 	    r_2 = a + (i+1)*h;   // x_{i+1}
-	    z +=  2*TMath::Pi()*par[0]*x[0]*m_T*
-	    (   r_0*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_0 / R, par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_0 / R, par[3] ) * par[4] ) ) / par[2])  
-	    + 4*r_1*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_1 / R, par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_1 / R, par[3] ) * par[4] ) ) / par[2])  
-	    + r_2*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_2 / R, par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_2 / R, par[3] ) * par[4] ) ) / par[2])  );
+	    z +=  2*TMath::Pi()*par[0]*x[0]*m_T*R*R*(   r_0*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_0 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_0 , par[3] ) * par[4] ) ) / par[2])  
+	    + 4*r_1*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_1 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_1 , par[3] ) * par[4] ) ) / par[2])  
+	    + r_2*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_2 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_2 , par[3] ) * par[4] ) ) / par[2])  );
 	}
 	z =  h*z/6;
 	return z;
 }
 
-void fcn(int &npar, double *gin, double &f, double *par, int iflag)
+void fcn_blast_wave(int &npar, double *gin, double &f, double *par, int iflag)
 {
 	f = 0.;
 	double range = 3.3 ;
@@ -169,143 +191,402 @@ void fcn(int &npar, double *gin, double &f, double *par, int iflag)
 	}
 }
 
+void fcn_levy(int &npar, double *gin, double &f, double *par, int iflag)
+{
+	f = 0.;
+	double range = 3.3 ;
+	//hist->GetXaxis()->SetRangeUser(0.3,3);
+	for(int i=1;i<=hist->GetNbinsX();i++) {
+	double *x = new double ;
+	x[0] = hist->GetBinCenter(i);
+	double measure = hist->GetBinContent(i);
+	double error = hist->GetBinError(i);
+	//double func = levy(x,par);
+	double func = levy(x,par);
+	double delta = (func - measure)/error;
+	f += delta*delta;
+		if (x[0] >= range)
+		{
+		i = (hist->GetNbinsX()+1 ) ;
+		}
+	}
+}
 
+double mean_p_T( double func_num(double*,double*), double func_denom(double*,double*), double *par , double b){
+double numerator = simpson(func_num, par , 0 , b , 10000);
+double denominator = simpson(func_denom, par , 0 , b , 10000);
+double res = numerator / denominator;
+return res ;
+}
+
+// Data / Model fit 
+// We compute the ratio data/model for each bin of a given histogram hist
+// and store the values in tables
+void Data_Model(double X[], double Y[], double Xerr[], double Yerr[], double func(double *,double *),double *par)
+{
+	int n = 1000;
+	double data_value , model_value , model_error;
+	double integral, low_edge, up_edge, bin_width ;
+	int Nbinx = hist->GetNbinsX();
+	for(int i=1;i<=Nbinx;i++) 
+	{
+	// for each bin, we get its content
+		data_value = hist->GetBinContent(i);
+	// we compute the mean value of the bin via the model
+	// i.e. we comute the integral of the model on the bin's width and divide by the bin's width
+		low_edge = hist->GetBinLowEdge(i);
+		up_edge = hist->GetBinLowEdge(i);
+		bin_width = hist->GetBinWidth(i);
+		up_edge += bin_width;
+		integral = simpson(func,par,low_edge,up_edge,n);
+		model_value = integral / bin_width;
+		model_error = TMath::Power((up_edge - low_edge)/n , 4) / bin_width;  // simpson error of order h^4
+	// then we compute the ratio data/model fit
+		Y[i-1] = data_value / model_value;
+	// we compute the uncertainty on this Y value via propagation of uncertainty
+	// considering the data and model uncertainties are uncorrelated 
+		Yerr[i-1] = TMath::Sqrt(  TMath::Power(hist->GetBinError(i) / model_value,2) + TMath::Power( data_value* model_error /(model_value*model_value) ,2) ) ; 
+	// we also get the center value of the bin for the future plot
+		X[i-1] = hist->GetBinCenter(i);
+		Xerr[i-1] = 0.5*bin_width;  // Xerr will represent the width of the bin (it is not an error strictly speaking)
+	}
+
+}
 
 int main(){
-
-	TString contours_sigma_output="contours_sigma.root";
-	TFile *Contours_sigma_output = new TFile(contours_sigma_output, "RECREATE");
-
+	char particule[]="  ", collision[]="  " ;
+	double masse ;
+	char *file ;
+	char *table ;
+	int number ;
+	cout << " quelle particule étudier vous ? proton, mesonphi " << endl;
+	cin >> particule ;
+	cout << " quelle type de collision étudier vous ? pp, pbpb " << endl;
+	cin >> collision ;
+	if(particule[0]=='p'){
+		masse=0.938 ;
+		file="HEPData-1569102768-v1-root.root" ;
+		if(collision[1]=='p'){
+			table="Table 6";
+			number = 1 ;
+		}
+		if(collision[1]=='b'){
+			table="Table 5";
+			number = 10 ;
+		}
+	}
+	if(particule[0]=='m'){
+		masse=1.019 ;
+		file="HEPData-ins1762368-v1-root.root" ;
+		if(collision[1]=='p'){
+			table="Table 4";
+			number = 1 ;
+		}
+		if(collision[1]=='b'){
+			table="Table 3";
+			number = 8 ;
+		}
+	}
+	cout<< "test fichier " << file << endl;
+	cout<< "test masse  "<< masse << endl;
+	ofstream myfile ;
+	ofstream myfile2 ;
+	myfile.open("resultat.txt");
+	myfile << "Centrality class" << "	" << " DN/DY " << "	" << "Uncertainty" <<"	"<<"Fraction of yield at low Pt"<< "    " <<"Uncertainty" <<"	"<<"<Pt>"<<  endl;
+	myfile << "  " << endl;
+	//myfile.close();
+	myfile2.open("resultat_BL.txt");
+	myfile2 << "Centrality class" << "	" << " DN/D_(eta) " << "	" << "<Beta_T>" <<"	"<<"<T_kin GeV"<< "    " <<"n" << endl;
+	myfile2 << "  " << endl;
+	
 	char data[] = "Hist1D_yX" ;
 	char error_sys[] = "Hist1D_yX_e2" ;
 	char error_stat[] = "Hist1D_yX_e1" ;
 	int digit, Nbinx ;
 	double a , b ;
-	double Scale_Histo[11] , chi2_expo, ndf_expo, chindf_expo ;
-	double par[5],err[5];
+	double Scale_Histo[11], SCALE[11] , SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, chi2_levy, ndf_levy, chindf_levy;
+	
+	
+	SCALE[1]=38605 ;
+	SCALE[2]=26540 ;
+	SCALE[3]=14013 ;	
+	SCALE[4]=7204 ;
+	SCALE[5]=3361 ;
+	SCALE[6]=1133 ;
+	SCALE[7]=401 ;
+	SCALE[8]=82 ;
+	SCALE[9]=15 ;
+	SCALE[10]=3.2 ;
+
+	
+	SCALE2[1]=1943 ;
+	SCALE2[2]=1587 ;
+	SCALE2[3]=1180 ;
+	SCALE2[4]=786 ;
+	SCALE2[5]=512 ;
+	SCALE2[6]=318 ;
+	SCALE2[7]=183 ;
+	SCALE2[8]=96 ;
+	SCALE2[9]=44 ;
+	SCALE2[10]=17 ;
+	
+	SCALE3[1]=74.56 ;
+	SCALE3[2]=61.51 ;
+	SCALE3[3]=47.40 ;
+	SCALE3[4]=33.17 ;
+	SCALE3[5]=22.51 ;
+	SCALE3[6]=14.46 ;
+	SCALE3[7]=8.71 ;
+	SCALE3[8]=4.74 ;
+	SCALE3[9]=2.30 ;
+	SCALE3[10]=0.92 ;
+	
+	NSCALE[1]=0.735 ;
+	NSCALE[2]=0.736;
+	NSCALE[3]=0.739;
+	NSCALE[4]=0.771;
+	NSCALE[5]=0.828;
+	NSCALE[6]=0.908;
+	NSCALE[7]=1.052;
+	NSCALE[8]=1.262;
+	NSCALE[9]=1.678;
+	NSCALE[10]=2.423 ;
+	
+	T_value[1]=0.090;
+	T_value[2]=0.091;
+	T_value[3]=0.094;
+	T_value[4]=0.097;
+	T_value[5]=0.101;
+	T_value[6]=0.108;
+	T_value[7]=0.115;
+	T_value[8]=0.129;
+	T_value[9]=0.147;
+	T_value[10]=0.161;
+	
+	Beta_T_value[1]=0.663;
+	Beta_T_value[2]=0.660;
+	Beta_T_value[3]=0.655;
+	Beta_T_value[4]=0.643;
+	Beta_T_value[5]=0.622;
+	Beta_T_value[6]=0.595;
+	Beta_T_value[7]=0.557;
+	Beta_T_value[8]=0.506;
+	Beta_T_value[9]=0.435;
+	Beta_T_value[10]=0.355;
+	
+	
+	double par[5],err[5], parlevy[5],errlevy[5];
+	TString contours_sigma_output="contours_sigma.root";
+		TFile *Contours_sigma_output = new TFile(contours_sigma_output, "RECREATE");
 	TString outputfilename="result.root" ;
-	TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
-	TFile *myFile = new TFile("HEPData-1569102768-v1-root.root");
-	TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 5");
-	
+		TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
+		TFile *myFile = new TFile(file);
+		TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get(table);
 	TCanvas *test1 = new TCanvas("test1","DATA",0,0,700,500);
+		test1->SetGrid();
+		test1->SetLogy();
 	TCanvas *ROMAIN = new TCanvas("FIT BLAST-WAVE" , " BLAST_WAVE " , 200 , 200 );
+		ROMAIN->SetGrid();
+		ROMAIN->SetLogy();
 	TCanvas *CONTOUR = new TCanvas("CONTOUR" , " Contour " , 200 , 200 );
-
+	TMultiGraph  *mg  = new TMultiGraph();
+		mg->SetTitle(" ;<Beta_S>; T");  // we set the title of the graph, and the one of the axis
 	
-
-	
-	for(int digit=1 ; digit<= 3 ; digit++){
+	for(int digit=1 ; digit<= number ; digit++){
 		OutputHisto->cd();
+
 		data[8]=digit+'0' ;
 		error_sys[8]=digit+'0' ;
-		error_stat[8]=digit+'0' ;
-		
-		
+		error_stat[8]=digit+'0' ;	
 		hist=(TH1F*)dirFile->Get(data);
 		TH1F* H1_pp_e1=(TH1F*)dirFile->Get(error_sys);
 		TH1F* H1_pp_E1=(TH1F*)dirFile->Get(error_stat);
-		
+		if(digit==10){
+			hist=(TH1F*)dirFile->Get("Hist1D_y10");
+			H1_pp_e1=(TH1F*)dirFile->Get("Hist1D_y10_e2");
+			H1_pp_E1=(TH1F*)dirFile->Get("Hist1D_y10_e1");
+			//
+			}
+		cout<<" "<<endl;
+		cout<<" "<<endl;
+		cout<<"data = "<<data<<endl;
+		cout<<" "<<endl;
+		cout<<" "<<endl;
 		hist->SetNameTitle(" Table 5" , "pT-distributions " );
 		hist->SetXTitle("p_{T} [GeV/c]");
 		hist->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
-
+		Nbinx = hist->GetNbinsX();
 		a= hist->GetBinLowEdge(1);
 		b= hist->GetBinLowEdge(Nbinx);
-		b += hist->GetBinWidth(Nbinx);
-		
-		Nbinx = hist->GetNbinsX();
+		b= b+ hist->GetBinWidth(Nbinx);
 		for(int i = 0; i <= Nbinx  ; i++){
 			hist->SetBinError(i, sqrt( pow(H1_pp_e1->GetBinContent(i),2) + pow(H1_pp_E1->GetBinContent(i),2) ) ) ;
 		}	
-
 		Scale_Histo[1]=hist->Integral("width") ;
-		TF1 *func1 = new TF1("expo_law",expo_law,0,b,3);
-			func1->SetParameter(0,Scale_Histo[1]);
-			func1->SetParameter(1,0.938);
-			func1->SetParLimits(1,0.938,0.938);
-			func1->SetParameter(2,0.1);
-			func1->SetParNames("C","m","T");
-			func1->SetLineColor(kViolet);
-		test1->cd();
-		hist->Draw("SAME");
-		
-		//hist->Fit("expo_law","+ I  ","SAMES HIST",0,b);  
-		chi2_expo = func1->GetChisquare();
-		ndf_expo = func1->GetNDF();
-		chindf_expo = chi2_expo/ndf_expo ;
-		cout <<" Chi square expo law = "<< chi2_expo << endl;
-		cout <<" NDF expo law = "<< ndf_expo << endl; 
-		cout <<" Chi2 / ndf = " << chindf_expo << endl;
-		test1->Write();
+// FIT 
 
-		TMinuit *gMinuit = new TMinuit(5);
-			gMinuit->SetFCN(fcn);
-// Paramètre blast wave
-			gMinuit->DefineParameter(0, "A",72.74, 0.01, 0, 100);
-			gMinuit->FixParameter(0);
-			gMinuit->DefineParameter(1, "m_0",0.938, 0.01, 0.1,1);
-			gMinuit->FixParameter(1);
-			gMinuit->DefineParameter(2, "T", 0.09, 0.0001, 0, 1);
-			gMinuit->DefineParameter(3, "n", 1, 0.01, 0, 20);
-			//gMinuit->FixParameter(3);	
-			gMinuit->DefineParameter(4, "beta_s", 0.66, 0.0001, 0, 1);
-		gMinuit->Command("MIGRAD");
-		gMinuit->Command("MINOS");
-		//test1->Close();
+
+		TF1 *func2 = new TF1("boltzmann",boltzmann,0,b,3);
+			func2->SetParameter(0,Scale_Histo[1]);
+			func2->SetParameter(1,masse);
+			func2->SetParLimits(1,masse,masse);
+			func2->SetParameter(2,0.2);
+			func2->SetParNames("C", "m", "T");	
+			func2->SetLineColor(kGreen);
+			
+		hist->Fit("boltzmann","+ I ","SAMES HIST",0,3.3);
+		SCALE_BOL[digit]=func2->GetParameter(0) ;
+		double chi2_bol = func2->GetChisquare();
+		double ndf_bol = func2->GetNDF();
+		double chindf_bol = chi2_bol/ndf_bol ;
+		cout <<" Chi square boltz = "<< chi2_bol << endl;
+		cout <<" NDF boltz = "<< ndf_bol << endl; 
+		cout <<" Chi2 / ndf = " << chindf_bol << endl;
+	// FIT BLAST WAVE	
+		TMinuit *gMinuit_BL = new TMinuit(5);
+			gMinuit_BL->SetFCN(fcn_blast_wave);
+			gMinuit_BL->DefineParameter(0, "A", SCALE[digit], 0.1, 0, 100000);
+			
+			gMinuit_BL->FixParameter(0);
+			gMinuit_BL->DefineParameter(1, "m_0",masse, 0.01, 0.1,2);
+			gMinuit_BL->FixParameter(1);
+			gMinuit_BL->DefineParameter(2, "T", T_value[digit], 0.0001, 0, 0.3);
+			//gMinuit_BL->FixParameter(2);
+			gMinuit_BL->DefineParameter(3, "n", NSCALE[digit], 0.01, 0, 20);
+			gMinuit_BL->FixParameter(3);	
+			gMinuit_BL->DefineParameter(4, "beta_s", Beta_T_value[digit], 0.01, 0, 1);
+			//gMinuit_BL->FixParameter(4);
+		gMinuit_BL->Command("MIGRAD");
+		gMinuit_BL->Command("MINOS");
+		
 		ROMAIN->cd();
-		for(int i=0;i<5;i++) gMinuit->GetParameter(i,par[i],err[i]);
+		for(int i=0;i<5;i++) gMinuit_BL->GetParameter(i,par[i],err[i]);
 		TH1F* curve = new TH1F("curve","curve",hist->GetNbinsX()*5,0,b);
 			for(int i=1;i<=curve->GetNbinsX();i++) 
 			{		
 				double *x = new double ;
 				x[0] = curve->GetBinCenter(i);
 				double f = blast_wave(x,par);
-				//double f = levy(x,par);
 				curve->SetBinContent(i,f);
 			} 
+		A_value[digit]=par[0];
 		curve->SetLineWidth(3);
 		hist->Draw("same");
 		curve->Draw("csame");
-		ROMAIN->Write();
-		//ROMAIN->Close();
-		OutputHisto->Close();
+		//myfile2.open("resultat_BL.txt");
+		myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]/(2/2+par[3]))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
+		//myfile2.close();
+   	gMinuit_BL->SetErrorDef(4); //note 4 and not 2!
+   	TGraph *gr2 = (TGraph*)gMinuit_BL->Contour(10,4,2);
+   	gr2->SetFillColor(42);
+   	gr2->SetLineColor(kRed);
+   	gr2->SetLineWidth(2);
+   //Get contour for parameter 2 versus parameter 4 for ERRDEF=1
+   	gMinuit_BL->SetErrorDef(1);
+   	TGraph *gr1 = (TGraph*)gMinuit_BL->Contour(10,4,2);
+   	gr1->SetFillColor(38);
+   	gr1->SetLineColor(kBlue);
+   	gr1->SetLineWidth(2);
+        //gr1->Draw("same alf");
+
+	mg->Add(gr2);
+	mg->Add(gr1);
+    
+	gr2->SetName( Form("Err_def_9_digit_%d", digit) );
+	gr1->SetName( Form("Err_def_1_digit_%d", digit) );
+	Contours_sigma_output -> cd();  // we save the 2-sigma contours 
+	gr2->Write();
+	gr1->Write();
+	//gr2->Draw("AL");
 	
+// FIT LEVY
+	TMinuit *gMinuit_LEVY = new TMinuit(4);
+		gMinuit_LEVY->SetFCN(fcn_levy);
+		gMinuit_LEVY->DefineParameter(0, "C", Scale_Histo[1], 0.01, 0, 2*Scale_Histo[1]);
+		//gMinuit_LEVY->FixParameter(0);
+		gMinuit_LEVY->DefineParameter(1, "m_0",masse, 0.01, 0.1,2);
+		gMinuit_LEVY->FixParameter(1);
+		gMinuit_LEVY->DefineParameter(2, "T", 0.6, 0.01, 0, 2);
+		gMinuit_LEVY->DefineParameter(3, "n", 7.79, 0.01, 0, 20);
+		//gMinuit_LEVY->FixParameter(3);	
+		gMinuit_LEVY->Command("MIGRAD");
+		gMinuit_LEVY->Command("MINOS");
+
+		test1->cd();
+		for(int i=0;i<5;i++) gMinuit_LEVY->GetParameter(i,parlevy[i],errlevy[i]);
+		TH1F* curve1 = new TH1F("curve1","curve1",hist->GetNbinsX()*5,0,b);
+			for(int i=1;i<=curve1->GetNbinsX();i++) 
+			{		
+				double *x = new double ;
+				x[0] = curve1->GetBinCenter(i);
+				double f = levy(x,parlevy);
+				//double f = levy(x,par);
+				curve1->SetBinContent(i,f);
+			} 
+		curve1->SetLineWidth(3);
+		hist->Draw("same");
+		curve1->Draw("csame");
+		//myfile.open();
+		myfile <<"Centrality fichier "<< digit<<"	" << par[0] << "	" << err[0] << "	" << 100*simpson(levy,parlevy,0,a,1000)/simpson(levy,parlevy,0,b,1000) << "			" <<" incertitude"<<"	"<< mean_p_T(levyPT,levy,parlevy,20)<< "	"<< endl;
+		//myfile.close();
+		
+	}
 	
 	Contours_sigma_output -> cd();  // we save the 2-sigma contours 
 	CONTOUR->cd();
-   	gMinuit->SetErrorDef(9); //note 4 and not 2!
-   	TGraph *gr2 = (TGraph*)gMinuit->Contour(10,4,2);
-   	gr2->SetFillColor(42);
-   	//gr2->Draw("alp");
+	mg->Draw("AL");
+	CONTOUR->Write();    
+	OutputHisto->cd();
+ 	test1->Write();
+	ROMAIN->Write();
+	Contours_sigma_output -> Close();
 
-   
-   //Get contour for parameter 2 versus parameter 4 for ERRDEF=1
-   	gMinuit->SetErrorDef(1);
-   	TGraph *gr1 = (TGraph*)gMinuit->Contour(10,4,2);
-   	gr1->SetFillColor(38);
-        //gr1->Draw("same alf");
-
-        
-        TMultiGraph  *mg  = new TMultiGraph();
-	mg->SetTitle(" ;<Beta_T>; T");  // we set the title of the graph, and the one of the axis
-	mg->Add(gr2);
-	mg->Add(gr1);
-
-	mg->Draw("LIST SAME");
-
-        CONTOUR->Write();
-        CONTOUR->Close();
-        Contours_sigma_output -> Close();
-
+myfile.close();	
+for(int i = 1 ; i<=10 ; i++){
+	//cout <<" A boltzmann = " << SCALE_BOL[i] << endl;
+	//cout<<" A value BL = "<< A_value[i] << endl;
+	//cout << " compare 1" << SCALE[i]/SCALE3[i] << endl;
+	//cout << " compare 1" << SCALE[i]/SCALE2[i] << endl;
 	}
-		Contours_sigma_output->cd();
-		CONTOUR->cd();
-		CONTOUR->DrawFrame(0.8, 0.085, 0.95 , 0.095);
-	        CONTOUR->Write();
-	        //CONTOUR->Close();
-		Contours_sigma_output -> Close();
-		
+	
+	
+	
+	
+//-------------------------------------------------------------------------------------------------
+// DATA / MODEL FIT
+
+	double X[Nbinx];  // x axis of the plot
+	double Y[Nbinx];  // y axis of the plot
+	double Xerr[Nbinx];  // we take into account the width of a bin (this is not an error strictly speaking!)
+	double Yerr[Nbinx];  // error on y axis
+	
+	Data_Model(X,Y,Xerr,Yerr,blast_wave,par);
+	
+	//cout << "Yerr after = " <<  Yerr[Nbinx-1] << endl;
+	
+	TCanvas *c2 = new TCanvas("c2","c2",200,10,600,400);
+	c2->SetGrid();
+	// we create the graph to plot Data/Model fit with rectangle errors
+	TGraphErrors *dataModel = new TGraphErrors(30,X,Y,Xerr,Yerr);
+	dataModel->SetLineColor(2);
+	dataModel->SetLineWidth(2);
+	dataModel->SetMarkerColor(4);
+	dataModel->SetMarkerSize(1);
+	dataModel->SetMarkerStyle(21);
+	dataModel->SetTitle(" ;p_T (GeV/c); Data / model fit");
+	dataModel->SetLineWidth(2);
+	dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
+	dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
+	
+	// we plot a lin at y=1 to show the deviation to Data = Model fit
+	TLine *line = new TLine(0,1,b,1);
+	line->SetLineColor(30);
+	line->SetLineWidth(3);
+	line->SetLineStyle(2);
+	line->Draw("SAME");
+//----------------------------------------------------------------------------------------------------
+
+	OutputHisto->Close();
 }
 /*
 // Création du fichier root de sortie et récupération du fichier root données
