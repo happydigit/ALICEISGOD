@@ -1,0 +1,10 @@
+Centrality class	 DN/D_(eta) 	<Beta_T>	<T_kin GeV    n
+  
+ Centrality fichier :1	 38605		0.512826	0.0910191	0.735	
+ Centrality fichier :2	 26540		0.512479	0.0909137	0.736	
+ Centrality fichier :3	 14013		0.510565	0.0932462	0.739	
+ Centrality fichier :4	 7204		0.497817	0.0954204	0.771	
+ Centrality fichier :5	 3361		0.481959	0.0976416	0.828	
+ Centrality fichier :6	 1133		0.45814	0.102097	0.908	
+ Centrality fichier :7	 401		0.424703	0.105388	1.052	
+ Centrality fichier :8	 82		0.384924	0.112752	1.262	

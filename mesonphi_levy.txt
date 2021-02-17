@@ -1,0 +1,10 @@
+Centrality class	 DN/DY 	Uncertainty	Fraction of yield at low Pt    Uncertainty	<Pt>
+  
+Centrality fichier 1	38605		0		9.33083			 incertitude	1.34839	
+Centrality fichier 2	26540		0		9.59707			 incertitude	1.32488	
+Centrality fichier 3	14013		0		9.56385			 incertitude	1.32775	
+Centrality fichier 4	7204		0		10.0071			 incertitude	1.29064	
+Centrality fichier 5	3361		0		10.0844			 incertitude	1.28443	
+Centrality fichier 6	1133		0		10.7033			 incertitude	1.23735	
+Centrality fichier 7	401		0		11.3779			 incertitude	1.20776	
+Centrality fichier 8	82		0		12.8539			 incertitude	1.17392	
