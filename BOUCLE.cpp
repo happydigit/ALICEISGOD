@@ -86,7 +86,7 @@ double expo_law(double *x , double *par)
 double boltzmann(double *x , double *par)
 {
 	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
-	double res = 2*TMath::Pi()*par[0]*x[0]*m_T*exp(- (m_T - par[1]) / par[2]);
+	double res = par[0]*x[0]*m_T*exp(- (m_T - par[1]) / par[2]);
 	return res;
 }
 
@@ -162,7 +162,7 @@ double blast_wave(double *x , double *par)
 	    r_0 = a + i*h;   // x_i
 	    r_1 = a + (2*i+1)*h/2;  // ( x_{i} + x_{i+1} ) / 2               
 	    r_2 = a + (i+1)*h;   // x_{i+1}
-	    z +=  2*TMath::Pi()*par[0]*x[0]*m_T*R*R*(   r_0*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_0 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_0 , par[3] ) * par[4] ) ) / par[2])  
+	    z +=  x[0]*m_T*par[0]*R*R*2*TMath::Pi()*(   r_0*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_0 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_0 , par[3] ) * par[4] ) ) / par[2])  
 	    + 4*r_1*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_1 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_1 , par[3] ) * par[4] ) ) / par[2])  
 	    + r_2*TMath::BesselI0( x[0]*TMath::SinH( TMath::ATanH( TMath::Power( r_2 , par[3] ) * par[4]  )) / par[2] ) * TMath::BesselK1( m_T*TMath::CosH( TMath::ATanH(  TMath::Power( r_2 , par[3] ) * par[4] ) ) / par[2])  );
 	}
@@ -261,7 +261,7 @@ int main(){
 	int number ;
 	cout << " quelle particule étudier vous ? proton, mesonphi " << endl;
 	cin >> particule ;
-	cout << " quelle type de collision étudier vous ? pp, pbpb " << endl;
+	cout << " quelle type de collision étudier vous ? pp, PbPb " << endl;
 	cin >> collision ;
 	if(particule[0]=='p'){
 		masse=0.938 ;
@@ -304,19 +304,19 @@ int main(){
 	char error_stat[] = "Hist1D_yX_e1" ;
 	int digit, Nbinx ;
 	double a , b ;
-	double Scale_Histo[11], SCALE[11] , SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, chi2_levy, ndf_levy, chindf_levy;
+	double Scale_Histo[11], SCALE[11] , SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, chi2_levy, ndf_levy, chindf_levy, Beta_S_value[11];
 	
 	
-	SCALE[1]=38605 ;
-	SCALE[2]=26540 ;
-	SCALE[3]=14013 ;	
-	SCALE[4]=7204 ;
-	SCALE[5]=3361 ;
-	SCALE[6]=1133 ;
-	SCALE[7]=401 ;
-	SCALE[8]=82 ;
-	SCALE[9]=15 ;
-	SCALE[10]=3.2 ;
+	SCALE[1]=101276 ;
+	SCALE[2]=73945 ;
+	SCALE[3]=39170 ;	
+	SCALE[4]=19521 ;
+	SCALE[5]=8718 ;
+	SCALE[6]=2840 ;
+	SCALE[7]=945 ;
+	SCALE[8]=182 ;
+	SCALE[9]=30 ;
+	SCALE[10]=6 ;
 
 	
 	SCALE2[1]=1943 ;
@@ -374,24 +374,46 @@ int main(){
 	Beta_T_value[9]=0.435;
 	Beta_T_value[10]=0.355;
 	
+	Beta_S_value[1]=0.906;
+	Beta_S_value[2]=0.902;
+	Beta_S_value[3]=0.897;
+	Beta_S_value[4]=0.890;
+	Beta_S_value[5]=0.879;
+	Beta_S_value[6]=0.865;
+	Beta_S_value[7]=0.849;
+	Beta_S_value[8]=0.825;
+	Beta_S_value[9]=0.799;
+	Beta_S_value[10]=0.740;
 	
-	double par[5],err[5], parlevy[5],errlevy[5];
+	
 	TString contours_sigma_output="contours_sigma.root";
-		TFile *Contours_sigma_output = new TFile(contours_sigma_output, "RECREATE");
+	TFile *Contours_sigma_output = new TFile(contours_sigma_output, "RECREATE");
 	TString outputfilename="result.root" ;
-		TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
-		TFile *myFile = new TFile(file);
-		TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get(table);
+	TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
+	TFile *myFile = new TFile(file);
+	TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get(table);
+	hist=(TH1F*)dirFile->Get("Hist1D_y1");
+	Nbinx = hist->GetNbinsX();
+	double X[Nbinx];  // x axis of the plot
+	double Y[Nbinx];  // y axis of the plot
+	double Xerr[Nbinx];  // we take into account the width of a bin (this is not an error strictly speaking!)
+	double Yerr[Nbinx];  // error on y axis
+	double par[5],err[5], parlevy[5],errlevy[5];
+
 	TCanvas *test1 = new TCanvas("test1","DATA",0,0,700,500);
 		test1->SetGrid();
 		test1->SetLogy();
 	TCanvas *ROMAIN = new TCanvas("FIT BLAST-WAVE" , " BLAST_WAVE " , 200 , 200 );
 		ROMAIN->SetGrid();
 		ROMAIN->SetLogy();
+	TCanvas *DATA_MODEL = new TCanvas("DATA_MODEL","DATA_MODEL",200,10,600,400);
+	DATA_MODEL->SetGrid();
 	TCanvas *CONTOUR = new TCanvas("CONTOUR" , " Contour " , 200 , 200 );
 	TMultiGraph  *mg  = new TMultiGraph();
 		mg->SetTitle(" ;<Beta_S>; T");  // we set the title of the graph, and the one of the axis
-	
+	TMultiGraph  *DM = new TMultiGraph();
+		DM->SetTitle(" ;Pt (Gev/c) ; Data / BW-FIT ");
+//-------------------------------------------------------------------DEBUT DU BOUCLAGE SUR TOUT LES FICHIER---------------------------------------------
 	for(int digit=1 ; digit<= number ; digit++){
 		OutputHisto->cd();
 
@@ -407,11 +429,6 @@ int main(){
 			H1_pp_E1=(TH1F*)dirFile->Get("Hist1D_y10_e1");
 			//
 			}
-		cout<<" "<<endl;
-		cout<<" "<<endl;
-		cout<<"data = "<<data<<endl;
-		cout<<" "<<endl;
-		cout<<" "<<endl;
 		hist->SetNameTitle(" Table 5" , "pT-distributions " );
 		hist->SetXTitle("p_{T} [GeV/c]");
 		hist->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
@@ -445,7 +462,7 @@ int main(){
 	// FIT BLAST WAVE	
 		TMinuit *gMinuit_BL = new TMinuit(5);
 			gMinuit_BL->SetFCN(fcn_blast_wave);
-			gMinuit_BL->DefineParameter(0, "A", SCALE[digit], 0.1, 0, 100000);
+			gMinuit_BL->DefineParameter(0, "A", SCALE[digit], 0.1, 0, 1000000);
 			
 			gMinuit_BL->FixParameter(0);
 			gMinuit_BL->DefineParameter(1, "m_0",masse, 0.01, 0.1,2);
@@ -454,7 +471,7 @@ int main(){
 			//gMinuit_BL->FixParameter(2);
 			gMinuit_BL->DefineParameter(3, "n", NSCALE[digit], 0.01, 0, 20);
 			gMinuit_BL->FixParameter(3);	
-			gMinuit_BL->DefineParameter(4, "beta_s", Beta_T_value[digit], 0.01, 0, 1);
+			gMinuit_BL->DefineParameter(4, "beta_s", Beta_S_value[digit], 0.01, 0, 1);
 			//gMinuit_BL->FixParameter(4);
 		gMinuit_BL->Command("MIGRAD");
 		gMinuit_BL->Command("MINOS");
@@ -474,16 +491,17 @@ int main(){
 		hist->Draw("same");
 		curve->Draw("csame");
 		//myfile2.open("resultat_BL.txt");
-		myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]/(2/2+par[3]))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
+		myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]*(2/(2+par[3])))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
 		//myfile2.close();
+		
    	gMinuit_BL->SetErrorDef(4); //note 4 and not 2!
-   	TGraph *gr2 = (TGraph*)gMinuit_BL->Contour(10,4,2);
+   	TGraph *gr2 = (TGraph*)gMinuit_BL->Contour(25,4,2);
    	gr2->SetFillColor(42);
    	gr2->SetLineColor(kRed);
    	gr2->SetLineWidth(2);
    //Get contour for parameter 2 versus parameter 4 for ERRDEF=1
    	gMinuit_BL->SetErrorDef(1);
-   	TGraph *gr1 = (TGraph*)gMinuit_BL->Contour(10,4,2);
+   	TGraph *gr1 = (TGraph*)gMinuit_BL->Contour(25,4,2);
    	gr1->SetFillColor(38);
    	gr1->SetLineColor(kBlue);
    	gr1->SetLineWidth(2);
@@ -508,7 +526,7 @@ int main(){
 		gMinuit_LEVY->FixParameter(1);
 		gMinuit_LEVY->DefineParameter(2, "T", 0.6, 0.01, 0, 2);
 		gMinuit_LEVY->DefineParameter(3, "n", 7.79, 0.01, 0, 20);
-		//gMinuit_LEVY->FixParameter(3);	
+		gMinuit_LEVY->FixParameter(3);	
 		gMinuit_LEVY->Command("MIGRAD");
 		gMinuit_LEVY->Command("MINOS");
 
@@ -527,16 +545,44 @@ int main(){
 		hist->Draw("same");
 		curve1->Draw("csame");
 		//myfile.open();
-		myfile <<"Centrality fichier "<< digit<<"	" << par[0] << "	" << err[0] << "	" << 100*simpson(levy,parlevy,0,a,1000)/simpson(levy,parlevy,0,b,1000) << "			" <<" incertitude"<<"	"<< mean_p_T(levyPT,levy,parlevy,20)<< "	"<< endl;
+		myfile <<"Centrality fichier "<< digit<<"	" << parlevy[0] << "	" << err[0] << "	" << 100*simpson(levy,parlevy,0,a,1000)/simpson(levy,parlevy,0,b,1000) << "			" <<" incertitude"<<"	"<< mean_p_T(levyPT,levy,parlevy,20)<< "	"<< endl;
 		//myfile.close();
-		
-	}
+
+// DATA / MODEL FIT	
+	Data_Model(X,Y,Xerr,Yerr,blast_wave,par);
+	// we create the graph to plot Data/Model fit with rectangle errors
+	TGraphErrors *dataModel = new TGraphErrors(Nbinx,X,Y,Xerr,Yerr);
+	dataModel->GetXaxis()->SetLimits(1,5);
+	dataModel->SetLineColor(digit);
+	dataModel->SetLineWidth(2);
+	dataModel->SetDrawOption("A5PX");
+	dataModel->SetMarkerColor(digit);
+	dataModel->SetMarkerSize(1);
+	dataModel->SetMarkerStyle(21);
+	dataModel->SetTitle(" ;p_T (GeV/c); Data / model fit");
+	dataModel->SetLineWidth(2);
+	//We Store the graph in a Multigraph
+	DM->Add(dataModel);
+	//dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
+	//dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
 	
+	
+	}
+//-----------------------------------------------------------------------------FIN DU BOUCLAGE SUR LES FICHIERS----------------------------------------	
 	Contours_sigma_output -> cd();  // we save the 2-sigma contours 
 	CONTOUR->cd();
 	mg->Draw("AL");
-	CONTOUR->Write();    
+	CONTOUR->Write();
 	OutputHisto->cd();
+	DATA_MODEL->cd();
+	DM->Draw("AL");
+	// we plot a lin at y=1 to show the deviation to Data = Model fit	
+	TLine *line = new TLine(0,1,b,1);
+	line->SetLineColor(30);
+	line->SetLineWidth(3);
+	line->SetLineStyle(2);
+	line->Draw("SAME");
+	DATA_MODEL->Write();
  	test1->Write();
 	ROMAIN->Write();
 	Contours_sigma_output -> Close();
@@ -552,39 +598,6 @@ for(int i = 1 ; i<=10 ; i++){
 	
 	
 	
-//-------------------------------------------------------------------------------------------------
-// DATA / MODEL FIT
-
-	double X[Nbinx];  // x axis of the plot
-	double Y[Nbinx];  // y axis of the plot
-	double Xerr[Nbinx];  // we take into account the width of a bin (this is not an error strictly speaking!)
-	double Yerr[Nbinx];  // error on y axis
-	
-	Data_Model(X,Y,Xerr,Yerr,blast_wave,par);
-	
-	//cout << "Yerr after = " <<  Yerr[Nbinx-1] << endl;
-	
-	TCanvas *c2 = new TCanvas("c2","c2",200,10,600,400);
-	c2->SetGrid();
-	// we create the graph to plot Data/Model fit with rectangle errors
-	TGraphErrors *dataModel = new TGraphErrors(30,X,Y,Xerr,Yerr);
-	dataModel->SetLineColor(2);
-	dataModel->SetLineWidth(2);
-	dataModel->SetMarkerColor(4);
-	dataModel->SetMarkerSize(1);
-	dataModel->SetMarkerStyle(21);
-	dataModel->SetTitle(" ;p_T (GeV/c); Data / model fit");
-	dataModel->SetLineWidth(2);
-	dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
-	dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
-	
-	// we plot a lin at y=1 to show the deviation to Data = Model fit
-	TLine *line = new TLine(0,1,b,1);
-	line->SetLineColor(30);
-	line->SetLineWidth(3);
-	line->SetLineStyle(2);
-	line->Draw("SAME");
-//----------------------------------------------------------------------------------------------------
 
 	OutputHisto->Close();
 }
