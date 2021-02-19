@@ -300,6 +300,27 @@ void Data_Model(double X[], double Y[], double Xerr[], double Yerr[], double fun
 }
 
 
+
+double Integral(double func(double *,double *), double *par, int par_size, double *covar)
+{
+
+	TF1 *f = new TF1("fit function",func,0,20,par_size);
+		f->SetParameters(par);	
+	double dyN = f->Integral(0,20);		
+	return dyN ;
+}
+
+double Integral_E(double func(double *,double *), double *par, int par_size, double *covar)
+{
+
+	TF1 *f = new TF1("fit function",func,0,20,par_size);
+		f->SetParameters(par);	
+
+	double dyN_error = f->IntegralError(0,20,par,covar) ;		
+	return dyN_error;
+}
+
+
 int main(){
 	char particule[]="  ", collision[]="  " ;
 	double masse ;
@@ -351,7 +372,7 @@ int main(){
 	char error_stat[] = "Hist1D_yX_e1" ;
 	int digit, Nbinx ;
 	double a , b ;
-	double Scale_Histo[11], SCALE[11] , SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, chi2_levy, ndf_levy, chindf_levy, Beta_S_value[11];
+	double Scale_Histo[11], SCALE[11] , SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, chi2_levy, ndf_levy, chindf_levy, Beta_S_value[11],Integral_value,Integral_error;
 	
 	
 	SCALE[1]=101276 ;
@@ -476,7 +497,7 @@ int main(){
 		
 		
 //-------------------------------------------------------------------DEBUT DU BOUCLAGE SUR TOUT LES FICHIER---------------------------------------------
-	for(int digit=1 ; digit<= 9 ; digit++){
+	for(int digit=1 ; digit<= number ; digit++){
 		OutputHisto->cd();
 
 		data[8]=digit+'0' ;
@@ -555,11 +576,7 @@ int main(){
 		A_value[digit]=par[0];
 		curve->SetLineWidth(3);
 		hist->Draw("same");
-		curve->Draw("csame");
-		//myfile2.open("resultat_BL.txt");
-		myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]*(2/(2+par[3])))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
-		//myfile2.close();
-		
+		curve->Draw("csame");		
    	gMinuit_BL->SetErrorDef(4); //note 4 and not 2!
    	TGraph *gr2 = (TGraph*)gMinuit_BL->Contour(25,4,2);
    	gr2->SetFillColor(42);
@@ -610,9 +627,6 @@ int main(){
 		curve1->SetLineWidth(3);
 		hist->Draw("same");
 		curve1->Draw("csame");
-		//myfile.open();
-		myfile <<"Centrality fichier "<< digit<<"	" << parlevy[0] << "	" << err[0] << "	" << 100*simpson(levy,parlevy,0,a,1000)/simpson(levy,parlevy,0,b,1000) << "			" <<" incertitude"<<"	"<< mean_p_T(levyPT,levy,parlevy,20)<< "	"<< endl;
-		//myfile.close();
 
 
 
@@ -620,9 +634,23 @@ int main(){
 	int npars = gMinuit_BL->GetNumPars();
 	double *covar = new double[npars*npars];
 	gMinuit_BL->mnemat(covar,npars);	
+	
+	
+	int npars_levy = gMinuit_LEVY->GetNumPars();
+	double *covar_levy = new double[npars_levy*npars_levy];
+	gMinuit_LEVY->mnemat(covar_levy,npars_levy);	
+
+	
 // we call the Data/Model fit function
 	Data_Model(X,Y,Xerr,Yerr,blast_wave,par,par_size_blast_wave,covar);
 	
+	//Integral_value = Integral(levy,parlevy,par_size_levy,covar_levy) ;
+	//Integral_error = Integral_E(levy,parlevy,par_size_levy,covar_levy) ;
+	
+	Integral_value = Integral(blast_wave,par,par_size_blast_wave,covar) ;
+	Integral_error = Integral_E(blast_wave,par,par_size_blast_wave,covar) ;
+	
+	cout << " test integral " << Integral_value << endl;
 // we create the graph to plot Data/Model fit with rectangle errors for phi mesons
 	DATA_MODEL->cd(1);
 	gPad->SetTickx(2);
@@ -654,7 +682,10 @@ int main(){
 	DM->Add(dataModel);
 	//dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
 	//dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
-	
+	// Export of the fit result into result.txt
+	myfile <<"Centrality fichier "<< digit<<"	" << Integral_value << "	" << Integral_error << "	" << 100*simpson(levy,parlevy,0,a,1000)/simpson(levy,parlevy,0,b,1000) << "			" <<" incertitude"<<"	"<< mean_p_T(levyPT,levy,parlevy,20)<< "	"<< endl;
+// Export of the result of the fit into file result_BL.txt
+	myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]*(2/(2+par[3])))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
 	
 	}
 //-----------------------------------------------------------------------------FIN DU BOUCLAGE SUR LES FICHIERS----------------------------------------	
