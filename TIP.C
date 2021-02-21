@@ -14,8 +14,13 @@
 #include <TROOT.h>
 #include <TGraphErrors.h>
 #include <TArrow.h>
-#include "TFile.h"
-#include "TH1.h"
+#include <TFile.h>
+#include <TH1.h>
+#include <TF1.h>
+#include <TFile.h>
+#include <TDirectoryFile.h>
+#include <TDirectory.h>
+#include <TLegend.h>
 
 using namespace std;
 		// Definition de la fonction de Boltzmann
@@ -39,8 +44,7 @@ double expo_law(double *x , double *par)
 double boltzmann(double *x , double *par)
 {
 	double m_T = sqrt(x[0]*x[0] + par[1]*par[1]);
-	// double res = par[0]*par[1]*par[1]*exp(- (m_T - par[1]) / par[2]);    // version avec m_T au carré et pas p_T au carré
-	double res = par[0]*x[0]*x[0]*exp(- (m_T - par[1]) / par[2]);
+	double res = par[0]*x[0]*m_T*exp(- (m_T - par[1]) / par[2]);
 	return res;
 }
 
@@ -91,7 +95,7 @@ TFile *myFile = new TFile("HEPData-1569102768-v1-root.root");
 
 		
 		// Récupération des différents histogrammes 
-TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 6");
+TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 5");
 
 
 	TH1F* H1_pp=(TH1F*)dirFile->Get("Hist1D_y1");
@@ -145,7 +149,7 @@ TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get("Table 6");
 	*/
 	
 		// Changement des noms d'axes et titres
-	H1_pp->SetNameTitle(" Table 4 phi-meson" , "pT-distributions of phi-meson measured in p-pbar collisions at sNN = 5.02 TeV." );
+	//H1_pp->SetNameTitle(" Table 4 phi-meson" , "pT-distributions of phi-meson measured in p-pbar collisions at sNN = 5.02 TeV." );
 	H1_pp->SetXTitle("p_{T} [GeV/c]");
 	H1_pp->SetYTitle("(1/Nev)*d^2(N)/dPtdYrap  [Gev/c] ");
 	/*
@@ -257,28 +261,29 @@ b=b+H1_pp->GetBinWidth(Nbinx);
 cout << " check bin up edge " << b << endl;
 		// Fit par rapport à la distribution de boltzmann
 		
-TF1 *func1 = new TF1("expo_law",expo_law,a,b,3);
-func1->SetParameter(0,0.1);
-func1->SetParameter(1,0.1);
+TF1 *func1 = new TF1("expo_law",expo_law,0,b,3);
+func1->SetParameter(0,1);
+func1->SetParameter(1,0.9);
 func1->SetParameter(2,0.1);
 func1->SetParNames("C","m","T");
 func1->SetLineColor(kViolet);
 
-TF1 *func2 = new TF1("boltzmann",boltzmann,a,b,3);
+TF1 *func2 = new TF1("boltzmann",boltzmann,0,b,3);
 func2->SetParameter(0,1);
-func2->SetParameter(1,0.1);
+func2->SetParLimits(0,0.5,2);
+func2->SetParameter(1,0.9);
 func2->SetParameter(2,0.1);
 func2->SetParNames("C", "m", "T");	
 func2->SetLineColor(kGreen);
 
-TF1 *func3 = new TF1("levy",levy,a,b,4);
+TF1 *func3 = new TF1("levy",levy,0,b,4);
 func3->SetParameter(0,1);
 func3->SetParameter(1,0.938);
-//func3->SetParLimits(1, 0.938,0.938);
+func3->SetParLimits(1, 0.938,0.938);
 func3->SetParameter(2,0.4);
 func3->SetParameter(3,3);
 func3->SetParNames("C","m","T","n");	
-func3->SetParLimits(3, 1.01 , 10);
+//func3->SetParLimits(3, 1.01 , 10);
 func3->SetLineColor(kCyan);
 
 TF1 *func4 = new TF1("power_law_Five", power_law_Five,a,b,3);
@@ -339,21 +344,21 @@ T1->cd();
 H1_pp->Draw("][ E1");
 // We fit the data with the different fitting functions
 
-H1_pp->Fit("expo_law","+ R L","SAMES HIST",a,b);  
+H1_pp->Fit("expo_law","+ I","SAMES HIST",a,b);  
 double chi2 = func1->GetChisquare();
 double ndf = func1->GetNDF();
 double chindf = chi2/ndf ;
 cout <<" Chi square expo = "<< chi2 << endl; 
 cout <<" NDF expo = "<< ndf << endl; 
 cout <<" Chi2 / ndf = " << chindf << endl;
-H1_pp->Fit("boltzmann","+ R L","SAMES HIST",a,b);
+H1_pp->Fit("boltzmann","+ I","SAMES HIST",a,b);
 chi2 = func2->GetChisquare();
 ndf = func2->GetNDF();
 chindf = chi2/ndf ;
 cout <<" Chi square boltz = "<< chi2 << endl;
 cout <<" NDF boltz = "<< ndf << endl; 
 cout <<" Chi2 / ndf = " << chindf << endl;
-H1_pp->Fit("levy","+ R L","SAMES HIST",a,b);
+H1_pp->Fit("levy","+ I","SAMES HIST",a,b);
 chi2 = func3->GetChisquare();
 ndf = func3->GetNDF();
 chindf = chi2/ndf ;
@@ -381,14 +386,14 @@ H1_pp->GetFunction("levy")->SetLineColor(kCyan);
    latex.DrawLatex(0.5,0.575, TString::Format("Parametre Levy n= %g ", func3->GetParameter(3)));
  
   
- /*  latex.DrawLatex(0.5,0.65, TString::Format("Parametre expo C= %g", func1->GetParameter(0)));
-   latex.DrawLatex(0.5,0.625, TString::Format("Parametre expo m_0= %g GeV/c", func1->GetParameter(1)));
-   latex.DrawLatex(0.5,0.60, TString::Format("Parametre expo T= %g GeV/c", func1->GetParameter(2)));
+  latex.DrawLatex(0.5,0.55, TString::Format("Parametre expo C= %g", func1->GetParameter(0)));
+   latex.DrawLatex(0.5,0.525, TString::Format("Parametre expo m_0= %g GeV/c", func1->GetParameter(1)));
+   latex.DrawLatex(0.5,0.50, TString::Format("Parametre expo T= %g GeV/c", func1->GetParameter(2)));
  
    latex.DrawLatex(0.5,0.45, TString::Format("Parametre boltzmann C= %g", func2->GetParameter(0)));
    latex.DrawLatex(0.5,0.425, TString::Format("Parametre boltzmann m_0= %g GeV/c", func2->GetParameter(1)));
    latex.DrawLatex(0.5,0.40, TString::Format("Parametre boltzmann T= %g GeV/c", func2->GetParameter(2)));
- */
+ 
 
 T1->Update();
 		// Configuration de la légende
