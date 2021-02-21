@@ -1,0 +1,3 @@
+Centrality class	 DN/DY 		Uncertainty	Fraction of yield at low Pt    Uncertainty	chi_2		ndf		chi2/ndf
+  
+Centrality fichier 1	0.025439		-nan	5.97607			-nan		inf		22		inf

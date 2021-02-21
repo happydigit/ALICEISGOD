@@ -173,25 +173,56 @@ void fcn_blast_wave(int &npar, double *gin, double &f, double *par, int iflag)
 	}
 }
 
+double chi2_blast_wave(double *par)
+{
+	double f = 0;
+	// we can modify the fitting range [a,b]
+	double a = hist->GetBinLowEdge(1); // lower limit of fitting range that is fixed	
+	double p_T = a;        // p_T is going to go from a to b to explore [a,b]             
+	int i = 1;		// we begin by studying the first bin
+	// when p_T > b, the minimization stops
+	for(int i=1;i<=UpperBin_Fit(upper_limit);i++)
+	{
+		double *x = new double ;
+		x[0] = hist->GetBinCenter(i);
+		double measure = hist->GetBinContent(i);
+		double error = hist->GetBinError(i);
+		double func = blast_wave(x,par);
+		double delta = (func - measure)/error;
+		f += delta*delta;	
+	}
+	return f ;
+}
+
 void fcn_levy(int &npar, double *gin, double &f, double *par, int iflag)
 {
 	f = 0.;
-	double range = 3.3 ;
-	//hist->GetXaxis()->SetRangeUser(0.3,3);
 	for(int i=1;i<=hist->GetNbinsX();i++) {
-	double *x = new double ;
-	x[0] = hist->GetBinCenter(i);
-	double measure = hist->GetBinContent(i);
-	double error = hist->GetBinError(i);
-	//double func = levy(x,par);
-	double func = levy(x,par);
-	double delta = (func - measure)/error;
-	f += delta*delta;
-		if (x[0] >= range)
-		{
-		i = (hist->GetNbinsX()+1 ) ;
-		}
+		double *x = new double ;
+		x[0] = hist->GetBinCenter(i);
+		double measure = hist->GetBinContent(i);
+		double error = hist->GetBinError(i);
+		//double func = levy(x,par);
+		double func = levy(x,par);
+		double delta = (func - measure)/error;
+		f += delta*delta;
 	}
+}
+
+double chi2_levy(double *par)
+{
+	double f = 0;
+	for(int i=1;i<=hist->GetNbinsX();i++) {
+		double *x = new double ;
+		x[0] = hist->GetBinCenter(i);
+		double measure = hist->GetBinContent(i);
+		double error = hist->GetBinError(i);
+		//double func = levy(x,par);
+		double func = levy(x,par);
+		double delta = (func - measure)/error;
+		f += delta*delta;
+	}
+	return f ;
 }
 
 double mean_p_T( double func_num(double*,double*), double func_denom(double*,double*), double *par , double b){

@@ -18,96 +18,85 @@ int main(){
 	char *table ;
 	int number ;
 	double SCALE[11] ;
+	ofstream myfile ;
+	ofstream myfile2 ;
 	cout << " quelle particule étudier vous ? proton, mesonphi, kaons, pions " << endl;
 	cin >> particule ;
 	cout << " quelle type de collision étudier vous ? pp, PbPb " << endl;
 	cin >> collision ;
-	if(particule[1]=='r'){
+	if(particule[1]=='r')
+	{
 		masse=0.938 ;
 		file="HEPData-1569102768-v1-root.root" ;
 		if(collision[1]=='p'){
 			table="Table 6";
 			number = 1 ;
+			myfile.open("resultat_proton_pp.txt");
+	myfile << "Centrality class" << "	" << " DN/DY " << "		" << "Uncertainty" <<"	"<<"Fraction of yield at low Pt"<< "    " <<"Uncertainty" <<"	"<<"chi_2"<<"		"<<"ndf"<<"		"<<"chi2/ndf"<< endl;
+	myfile << "  " << endl;
 		}
 		if(collision[1]=='b'){
+			myfile.open("resultat_proton_PbPb.txt");
+	myfile << "Centrality class" << "	" << " DN/DY " << "		" << "Uncertainty" <<"	"<<"Fraction of yield at low Pt"<< "    " <<"Uncertainty" <<"	"<<"chi_2"<<"		"<<"ndf"<<"		"<<"chi2/ndf"<< endl;
+	myfile << "  " << endl;
+	//myfile.close();
+	myfile2.open("resultat_proton_PbPb_BL.txt");
+	myfile2 << "Centrality class" << "	" << " DN/D_(eta) " << "	" << "<Beta_T>" <<"	"<<"<T_kin GeV"<< "    " <<"n" << endl;
+	myfile2 << "  " << endl;
 			table="Table 5";
 			number = 10 ;
 		}
-	SCALE[1]=101276 ;
-	SCALE[2]=73945 ;
-	SCALE[3]=39170 ;	
-	SCALE[4]=19521 ;
-	SCALE[5]=8718 ;
-	SCALE[6]=2840 ;
-	SCALE[7]=945 ;
-	SCALE[8]=182 ;
-	SCALE[9]=30 ;
-	SCALE[10]=6 ;
-	name = "ppbar" ;
+		SCALE[1]=101276 ;
+		SCALE[2]=73945 ;
+		SCALE[3]=39170 ;	
+		SCALE[4]=19521 ;
+		SCALE[5]=8718 ;
+		SCALE[6]=2840 ;
+		SCALE[7]=945 ;
+		SCALE[8]=182 ;
+		SCALE[9]=30 ;
+		SCALE[10]=6 ;
+		name = "ppbar" ;
 	}
-	if(particule[0]=='m'){
+	if(particule[0]=='m')
+	{
 		masse=1.019461 ;
 		file="HEPData-ins1762368-v1-root.root" ;
 		if(collision[1]=='p'){
 			table="Table 4";
 			number = 1 ;
+			myfile.open("resultat_meson_pp.txt");
+			myfile << "Centrality class" << "	" << " DN/DY " << "		" << "Uncertainty" <<"	"<<"Fraction of yield at low Pt"<< "    " <<"Uncertainty" <<"	"<<"chi_2"<<"		"<<"ndf"<<"		"<<"chi2/ndf"<< endl;
+			myfile << "  " << endl;
 		}
 		if(collision[1]=='b'){
+			myfile.open("resultat_meson_PbPb.txt");
+	myfile << "Centrality class" << "	" << " DN/DY " << "		" << "Uncertainty" <<"	"<<"Fraction of yield at low Pt"<< "    " <<"Uncertainty" <<"	"<<"chi_2"<<"		"<<"ndf"<<"		"<<"chi2/ndf"<< endl;
+			myfile << "  " << endl;
+			myfile2.open("resultat_meson_PbPb_BL.txt");
+			myfile2 << "Centrality class" << "	" << " DN/D_(eta) " << "	" << "<Beta_T>" <<"	"<<"<T_kin GeV"<< "    " <<"n" << endl;
+			myfile2 << "  " << endl;
 			table="Table 3";
 			number = 8 ;
 		}
-	SCALE[1]=39827 ;
-	SCALE[2]=24080 ;
-	SCALE[3]=11821 ;	
-	SCALE[4]=5520 ;
-	SCALE[5]=2224 ;
-	SCALE[6]=607 ;
-	SCALE[7]=164 ;
-	SCALE[8]=23.5 ;
-	name = "phi" ;
+		SCALE[1]=39827 ;
+		SCALE[2]=24080 ;
+		SCALE[3]=11821 ;	
+		SCALE[4]=5520 ;
+		SCALE[5]=2224 ;
+		SCALE[6]=607 ;
+		SCALE[7]=164 ;
+		SCALE[8]=23.5 ;
+		name = "phi" ;
 	}
-	if(particule[0]=='k'){
-		masse=0.493677 ;
-		file="HEPData-1569102768-v1-root.root" ;
-		if(collision[1]=='p'){
-			table="Table 4";
-			number = 1 ;
-		}
-		if(collision[1]=='b'){
-			table="Table 3";
-			number = 10 ;
-		}
-	}
-	if(particule[1]=='i'){
-		masse=0.13957 ;
-		file="HEPData-1569102768-v1-root.root" ;
-		if(collision[1]=='p'){
-			table="Table 2";
-			number = 1 ;
-		}
-		if(collision[1]=='b'){
-			table="Table 1";
-			number = 10 ;
-		}
-	}
-	cout<< "test fichier " << file << endl;
-	cout<< "test masse  "<< masse << endl;
-	ofstream myfile ;
-	ofstream myfile2 ;
-	myfile.open("resultat.txt");
-	myfile << "Centrality class" << "	" << " DN/DY " << "		" << "Uncertainty" <<"	"<<"Fraction of yield at low Pt"<< "    " <<"Uncertainty" <<"	"<<"<Pt>"<<  endl;
-	myfile << "  " << endl;
-	//myfile.close();
-	myfile2.open("resultat_BL.txt");
-	myfile2 << "Centrality class" << "	" << " DN/D_(eta) " << "	" << "<Beta_T>" <<"	"<<"<T_kin GeV"<< "    " <<"n" << endl;
-	myfile2 << "  " << endl;
-	
+
+
 	char data[] = "Hist1D_yX" ;
 	char error_sys[] = "Hist1D_yX_e2" ;
 	char error_stat[] = "Hist1D_yX_e1" ;
 	int digit, Nbinx ;
 	double a , b ;
-	double Scale_Histo[11], SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, chi2_levy, ndf_levy, chindf_levy, Beta_S_value[11],Integral_value,Integral_error;
+	double Scale_Histo[11], SCALE2[11], SCALE3[11], NSCALE[11], SCALE_BOL[11] , T_value[11], Beta_T_value[11],A_value[11],chi2_expo, ndf_expo, chindf_expo, ndf_levy, chindf_levy, Beta_S_value[11],Integral_value,Integral_error;
 	
 	
 
@@ -179,26 +168,24 @@ int main(){
 	Beta_S_value[10]=0.740;
 	
 	
-	TString contours_sigma_output=name+"Contours.root";
-	TFile *Contours_sigma_output = new TFile(contours_sigma_output, "RECREATE");
 	
-	TString outputfilename=name+"Data_Model.root" ;
-	TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
+
 	
 	TFile *myFile = new TFile(file);
 	TDirectoryFile* dirFile = (TDirectoryFile*)myFile->Get(table);
 	hist=(TH1F*)dirFile->Get("Hist1D_y1");
 	Nbinx = hist->GetNbinsX();
+	
 	double X[Nbinx];  // x axis of the plot
 	double Y[Nbinx];  // y axis of the plot
 	double Xerr[Nbinx];  // we take into account the width of a bin (this is not an error strictly speaking!)
 	double Yerr[Nbinx];  // error on y axis
-	double par[5],err[5], parlevy[5],errlevy[5];
+	double par[5],err[5], parlevy[4],errlevy[4];
 
-	TCanvas *test1 = new TCanvas("test1","DATA",0,0,700,500);
+	TCanvas *test1 = new TCanvas("DATA","DATA",0,0,700,500);
 		test1->SetGrid();
 		test1->SetLogy();
-	TCanvas *ROMAIN = new TCanvas("FIT BLAST-WAVE" , " BLAST_WAVE " , 200 , 200 );
+	TCanvas *ROMAIN = new TCanvas("FIT & DATA" , " FIT & DATA " , 200 , 200 );
 		ROMAIN->SetGrid();
 		ROMAIN->SetLogy();
 	TCanvas *ROMAIN2 = new TCanvas("Mutli DATA" , " Multi DATA " , 200 , 200 );
@@ -210,8 +197,6 @@ int main(){
 		gStyle->SetOptStat(0);
 		float small = 1e-5;
 		DATA_MODEL->Divide(1,2,small,small);
-	TH2F *h1 = new TH2F("h1","test1",10,0,1,20,1,20);
-	TH2F *h2 = new TH2F("h2","test2",10,0,1,20,0,19);
 	TCanvas *CONTOUR = new TCanvas("CONTOUR" , " Contour " , 200 , 200 );
 	TMultiGraph  *mg  = new TMultiGraph();
 		mg->SetTitle(" ;<Beta_S>; T");  // we set the title of the graph, and the one of the axis
@@ -225,8 +210,6 @@ int main(){
 		
 //-------------------------------------------------------------------DEBUT DU BOUCLAGE SUR TOUT LES FICHIER---------------------------------------------
 	for(int digit=1 ; digit<= number ; digit++){
-		OutputHisto->cd();
-
 		data[8]=digit+'0' ;
 		error_sys[8]=digit+'0' ;
 		error_stat[8]=digit+'0' ;	
@@ -253,7 +236,8 @@ int main(){
 		Scale_Histo[1]=hist->Integral("width") ;
 // FIT 
 
-
+/*
+// Fit on boltzmann function
 		TF1 *func2 = new TF1("boltzmann",boltzmann,0,b,3);
 			func2->SetParameter(0,Scale_Histo[1]);
 			func2->SetParameter(1,masse);
@@ -270,11 +254,22 @@ int main(){
 		cout <<" Chi square boltz = "<< chi2_bol << endl;
 		cout <<" NDF boltz = "<< ndf_bol << endl; 
 		cout <<" Chi2 / ndf = " << chindf_bol << endl;
-	// FIT BLAST WAVE	
+*/
+	
+
+// Coliisions Pb-Pb
+	if(collision[1]=='b'){
+	
+	TString contours_sigma_output=name+"Contours.root";
+	TFile *Contours_sigma_output = new TFile(contours_sigma_output, "RECREATE");
+	
+	TString outputfilename=name+"_PbPb_Data_Model.root" ;
+	TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
+// FIT BLAST WAVE	
 		TMinuit *gMinuit_BL = new TMinuit(5);
 			gMinuit_BL->SetFCN(fcn_blast_wave);
 			
-			gMinuit_BL->DefineParameter(0, "A", SCALE[digit], 1, 0, 100000000);
+			gMinuit_BL->DefineParameter(0, "A", SCALE[digit], 1, 0, 200000);
 			gMinuit_BL->FixParameter(0);
 			
 			gMinuit_BL->DefineParameter(1, "m_0",masse, 0.01, 0.1,2);
@@ -283,7 +278,7 @@ int main(){
 			gMinuit_BL->DefineParameter(2, "T", 0.1, 0.0001, 0, 0.3);
 			//gMinuit_BL->FixParameter(2);
 			
-			gMinuit_BL->DefineParameter(3, "n", 2, 0.01, 0, 20);
+			gMinuit_BL->DefineParameter(3, "n", NSCALE[digit], 0.01, 0, 20);
 			//gMinuit_BL->FixParameter(3);
 				
 			gMinuit_BL->DefineParameter(4, "beta_s", 0.6 , 0.0001, 0, 1);
@@ -301,132 +296,87 @@ int main(){
 				double f = blast_wave(x,par);
 				curve->SetBinContent(i,f);
 			} 
+		
+			
 		A_value[digit]=par[0];
 		curve->SetLineWidth(3);
 		hist->Draw("same");
-		curve->Draw("csame");		
-   	gMinuit_BL->SetErrorDef(4); //note 4 and not 2!
-   	TGraph *gr2 = (TGraph*)gMinuit_BL->Contour(25,4,2);
-   	gr2->SetFillColor(42);
-   	gr2->SetLineColor(kRed);
-   	gr2->SetLineWidth(2);
-   //Get contour for parameter 2 versus parameter 4 for ERRDEF=1
-   	gMinuit_BL->SetErrorDef(1);
-   	TGraph *gr1 = (TGraph*)gMinuit_BL->Contour(25,4,2);
-   	gr1->SetFillColor(38);
-   	gr1->SetLineColor(kBlue);
-   	gr1->SetLineWidth(2);
-        //gr1->Draw("same alf");
-
-	mg->Add(gr2);
-	mg->Add(gr1);
-    
-	gr2->SetName( Form(name+"_1sigma_contour_%d", digit) );
-	gr1->SetName( Form(name+"_2sigma_contour_%d", digit) );
-	Contours_sigma_output -> cd();  // we save the 2-sigma contours 
-	gr2->Write();
-	gr1->Write();
-	//gr2->Draw("AL");
-
-	
-// FIT LEVY
-	TMinuit *gMinuit_LEVY = new TMinuit(4);
-		gMinuit_LEVY->SetFCN(fcn_levy);
-		gMinuit_LEVY->DefineParameter(0, "C", Scale_Histo[1], 0.01, 0, 2*Scale_Histo[1]);
-		//gMinuit_LEVY->FixParameter(0);
-		gMinuit_LEVY->DefineParameter(1, "m_0",masse, 0.01, 0.1,2);
-		gMinuit_LEVY->FixParameter(1);
-		gMinuit_LEVY->DefineParameter(2, "T", 0.6, 0.01, 0, 2);
-		gMinuit_LEVY->DefineParameter(3, "n", 7.79, 0.01, 0, 20);
-		gMinuit_LEVY->FixParameter(3);	
-		gMinuit_LEVY->Command("MIGRAD");
-		gMinuit_LEVY->Command("MINOS");
-
-		test1->cd();
-		for(int i=0;i<5;i++) gMinuit_LEVY->GetParameter(i,parlevy[i],errlevy[i]);
-		TH1F* curve1 = new TH1F("curve1","curve1",hist->GetNbinsX()*5,0,b);
-			for(int i=1;i<=curve1->GetNbinsX();i++) 
-			{		
-				double *x = new double ;
-				x[0] = curve1->GetBinCenter(i);
-				double f = levy(x,parlevy);
-				//double f = levy(x,par);
-				curve1->SetBinContent(i,f);
-			} 
-		curve1->SetLineWidth(3);
-		hist->Draw("same");
-		curve1->Draw("csame");
-
-
-
+		curve->Draw("csame");	
+		
 // we get the covariant matrix from the Tminuit instance
-	int npars = gMinuit_BL->GetNumPars();
-	double *covar = new double[npars*npars];
-	gMinuit_BL->mnemat(covar,npars);	
-	
-	
-	int npars_levy = gMinuit_LEVY->GetNumPars();
-	double *covar_levy = new double[npars_levy*npars_levy];
-	gMinuit_LEVY->mnemat(covar_levy,npars_levy);	
+		int npars = gMinuit_BL->GetNumPars();
+		double *covar = new double[npars*npars];
+		gMinuit_BL->mnemat(covar,npars);	
+		
+	   	gMinuit_BL->SetErrorDef(4); //note 4 and not 2!
+	   	TGraph *gr2 = (TGraph*)gMinuit_BL->Contour(25,4,2);
+	   	gr2->SetFillColor(42);
+	   	gr2->SetLineColor(kRed);
+	   	gr2->SetLineWidth(2);
+//Get contour for parameter 2 versus parameter 4 for ERRDEF=1
+	   	gMinuit_BL->SetErrorDef(1);
+	   	TGraph *gr1 = (TGraph*)gMinuit_BL->Contour(25,4,2);
+	   	gr1->SetFillColor(38);
+	   	gr1->SetLineColor(kBlue);
+	   	gr1->SetLineWidth(2);
 
-	
-// we call the Data/Model fit function
-	Data_Model(X,Y,Xerr,Yerr,blast_wave,par,par_size_blast_wave,covar);
-	
-	//Integral_value = Integral(levy,parlevy,par_size_levy,covar_levy,0,20) ;
-	//Integral_error = Integral_E(levy,parlevy,par_size_levy,covar_levy,0,20) ;
-	
-	Integral_value = Integral(blast_wave,par,par_size_blast_wave,covar,0,20) ;
-	Integral_error = Integral_E(blast_wave,par,par_size_blast_wave,covar,0,20) ;
-	
-	cout << " test integral " << Integral_value << endl;
+
+		mg->Add(gr2);
+		mg->Add(gr1);
+	    
+		gr2->SetName( Form(name+"_1sigma_contour_%d", digit) );
+		gr1->SetName( Form(name+"_2sigma_contour_%d", digit) );
+		Contours_sigma_output -> cd();  // we save the 2-sigma contours 
+		gr2->Write();
+		gr1->Write();
+		Data_Model(X,Y,Xerr,Yerr,blast_wave,par,par_size_blast_wave,covar);
+		//Integral_value = Integral(levy,parlevy,par_size_levy,covar_levy,0,20) ;
+		//Integral_error = Integral_E(levy,parlevy,par_size_levy,covar_levy,0,20) ;
+		
+		Integral_value = Integral(blast_wave,par,par_size_blast_wave,covar,0,20) ;
+		Integral_error = Integral_E(blast_wave,par,par_size_blast_wave,covar,0,20) ;
+		
+		cout << " test integral " << Integral_value << endl;
 // we create the graph to plot Data/Model fit with rectangle errors for phi mesons
-	OutputHisto->cd();
-	DATA_MODEL->cd(1);
-	gPad->SetTickx(2);
-	gPad->SetBottomMargin(small); 
-	gPad->SetTickx();
-        //gPad->SetTicky(1);
-   	h2->GetYaxis()->SetLabelOffset(0.01);
- 	h2->Draw();
-   	
-   	// we create the graph to plot Data/Model fit with rectangle errors for p+pbar
-	DATA_MODEL->cd(2); 
-	gPad->SetTopMargin(small);
-	
-	// we create the graph to plot Data/Model fit with rectangle errors
-   	TGraphErrors *dataModel = new TGraphErrors(UpperBin_Fit(upper_limit),X,Y,Xerr,Yerr);
-	dataModel->SetName( Form(name+"_data_model_%d",digit) );
-	dataModel->SetLineColor(digit);
-	dataModel->SetLineWidth(2);
-	dataModel->SetMarkerColor(digit);
-	dataModel->SetMarkerSize(1);
-	dataModel->SetMarkerStyle(21);
-	dataModel->SetTitle(" ; p_T (GeV/c); Data / model fit");
-	dataModel->SetLineWidth(2);
-	dataModel->GetXaxis()->SetLimits(0.2,upper_limit+hist->GetBinWidth(UpperBin_Fit(upper_limit)));
-	dataModel->Draw("A5 SAME");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
-	dataModel->Draw("PX SAME");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
-	dataModel->Write();	
-// we plot a line at y=1 to show the deviation to Data = Model fit
+		OutputHisto->cd();
+		DATA_MODEL->cd(1);
+		gPad->SetTickx(2);
+		gPad->SetBottomMargin(small); 
+		gPad->SetTickx();
+//gPad->SetTicky(1);   	
+// we create the graph to plot Data/Model fit with rectangle errors for p+pbar
+		DATA_MODEL->cd(2); 
+		gPad->SetTopMargin(small);
+// we create the graph to plot Data/Model fit with rectangle errors
+	   	TGraphErrors *dataModel = new TGraphErrors(UpperBin_Fit(upper_limit),X,Y,Xerr,Yerr);
+		dataModel->SetName( Form(name+"_data_model_%d",digit) );
+		dataModel->SetLineColor(digit);
+		dataModel->SetLineWidth(2);
+		dataModel->SetMarkerColor(digit);
+		dataModel->SetMarkerSize(1);
+		dataModel->SetMarkerStyle(21);
+		dataModel->SetTitle(" ; p_T (GeV/c); Data / model fit");
+		dataModel->SetLineWidth(2);
+		dataModel->GetXaxis()->SetLimits(0.2,upper_limit+hist->GetBinWidth(UpperBin_Fit(upper_limit)));
+		dataModel->Draw("A5 SAME");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
+		dataModel->Draw("PX SAME");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
+		dataModel->Write();	
+	// we plot a line at y=1 to show the deviation to Data = Model fit
 
-	//We Store the graph in a Multigraph
-	DM->Add(dataModel);
-	//dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
-	//dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
-	// Export of the fit result into result.txt
-	myfile <<"Centrality fichier "<< digit<<"	" << Integral_value << "		" << Integral_error << "	" << 100*Integral(blast_wave,par,par_size_blast_wave,covar,0,a)/Integral(blast_wave,par,par_size_blast_wave,covar,0,b) << "			" <<(100*Integral(blast_wave,par,par_size_blast_wave,covar,0,a)/Integral(blast_wave,par,par_size_blast_wave,covar,0,b)*TMath::Sqrt( TMath::Power( Integral_E(blast_wave,par,par_size_blast_wave,covar,0,a) / Integral(blast_wave,par,par_size_blast_wave,covar,0,a),2)  +  TMath::Power( Integral_E(blast_wave,par,par_size_blast_wave,covar,0,b) / Integral(blast_wave,par,par_size_blast_wave,covar,0,b) ,2) ) ) <<"	"<< mean_p_T(levyPT,levy,parlevy,20)<< "	"<< endl;
-// Export of the result of the fit into file result_BL.txt
-	myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]*(2/(2+par[3])))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
-	
-	}
-//-----------------------------------------------------------------------------FIN DU BOUCLAGE SUR LES FICHIERS----------------------------------------	
+		//We Store the graph in a Multigraph
+		DM->Add(dataModel);
+		//dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
+		//dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
+		// Export of the fit result into result.txt
+		myfile <<"Centrality fichier "<< digit<<"	" << Integral_value << "		" << Integral_error << "	" << 100*Integral(blast_wave,par,par_size_blast_wave,covar,0,a)/Integral(blast_wave,par,par_size_blast_wave,covar,0,b) << "			" <<(100*Integral(blast_wave,par,par_size_blast_wave,covar,0,a)/Integral(blast_wave,par,par_size_blast_wave,covar,0,b)*TMath::Sqrt( TMath::Power( Integral_E(blast_wave,par,par_size_blast_wave,covar,0,a) / Integral(blast_wave,par,par_size_blast_wave,covar,0,a),2)  +  TMath::Power( Integral_E(blast_wave,par,par_size_blast_wave,covar,0,b) / Integral(blast_wave,par,par_size_blast_wave,covar,0,b) ,2) ) ) <<"	"<< chi2_blast_wave(par)<< "		"<<(Nbinx-gMinuit_BL->GetNumFreePars())<<"		"<<(chi2_blast_wave(par)/(Nbinx-gMinuit_BL->GetNumFreePars()))<<endl;
+	// Export of the result of the fit into file result_BL.txt
+		myfile2 << " Centrality fichier :"<<digit<<"	 "<<par[0]<<"		"<<(par[4]*(2/(2+par[3])))<<"	"<<par[2]<<"	"<<par[3]<<"	"<<endl;
 	Contours_sigma_output -> cd();  // we save the 2-sigma contours 
 	CONTOUR->cd();
 	mg->Draw("AL");
 	CONTOUR->Write();
+	Contours_sigma_output -> Close();
 	OutputHisto->cd();
-	//DATA_MODEL->cd();
 	ROMAIN2->cd();
 	DM->Draw("A5");
 	DM->Draw("PX");
@@ -440,7 +390,107 @@ int main(){
  	test1->Write();
 	ROMAIN->Write();
 	OutputHisto->Close();
-	Contours_sigma_output -> Close();
+	}
+// Collision pp
+	if(collision[1]=='p'){
+	
+	
+	TString outputfilename=name+"_PbPb_Data_Model.root" ;
+	TFile* OutputHisto = new TFile(outputfilename, "RECREATE");
+	
+// FIT LEVY
+		TMinuit *gMinuit_LEVY = new TMinuit(4);
+			gMinuit_LEVY->SetFCN(fcn_levy);
+			gMinuit_LEVY->DefineParameter(0, "C", Scale_Histo[1], 0.01, 0, 2*Scale_Histo[1]);
+			//gMinuit_LEVY->FixParameter(0);
+			gMinuit_LEVY->DefineParameter(1, "m_0",masse, 0.01, 0.1,2);
+			gMinuit_LEVY->FixParameter(1);
+			gMinuit_LEVY->DefineParameter(2, "T", 0.6, 0.01, 0, 2);
+			gMinuit_LEVY->DefineParameter(3, "n", 7.79, 0.01, 0, 20);
+			gMinuit_LEVY->FixParameter(3);	
+			gMinuit_LEVY->Command("MIGRAD");
+			gMinuit_LEVY->Command("MINOS");
+
+			test1->cd();
+			for(int i=0;i<5;i++) gMinuit_LEVY->GetParameter(i,parlevy[i],errlevy[i]);
+			TH1F* curve1 = new TH1F("curve1","curve1",hist->GetNbinsX()*5,0,b);
+				for(int i=1;i<=curve1->GetNbinsX();i++) 
+				{		
+					double *x = new double ;
+					x[0] = curve1->GetBinCenter(i);
+					double f = levy(x,parlevy);
+					//double f = levy(x,par);
+					curve1->SetBinContent(i,f);
+				} 
+			curve1->SetLineWidth(3);
+			hist->Draw("same");
+			curve1->Draw("csame");
+
+// we get the covariant matrix from the Tminuit instance
+
+	int npars_levy = gMinuit_LEVY->GetNumPars();
+	double *covar_levy = new double[npars_levy*npars_levy];
+	gMinuit_LEVY->mnemat(covar_levy,npars_levy);	
+
+	
+	
+	
+	
+		Data_Model(X,Y,Xerr,Yerr,levy,parlevy,par_size_levy,covar_levy);
+		Integral_value = Integral(levy,parlevy,par_size_levy,covar_levy,0,20) ;
+		Integral_error = Integral_E(levy,parlevy,par_size_levy,covar_levy,0,20) ;
+		
+		cout << " test integral " << Integral_value << endl;
+	// we create the graph to plot Data/Model fit with rectangle errors for phi mesons
+		OutputHisto->cd();
+		DATA_MODEL->cd(1);
+		gPad->SetTickx(2);
+		gPad->SetBottomMargin(small); 
+		gPad->SetTickx();
+		//gPad->SetTicky(1) ;	
+	   	// we create the graph to plot Data/Model fit with rectangle errors for p+pbar
+		DATA_MODEL->cd(2); 
+		gPad->SetTopMargin(small);
+		
+		// we create the graph to plot Data/Model fit with rectangle errors
+	   	TGraphErrors *dataModel = new TGraphErrors(Nbinx,X,Y,Xerr,Yerr);
+		dataModel->SetName( Form(name+"_data_model_%d",digit) );
+		dataModel->SetLineColor(digit);
+		dataModel->SetLineWidth(2);
+		dataModel->SetMarkerColor(digit);
+		dataModel->SetMarkerSize(1);
+		dataModel->SetMarkerStyle(21);
+		dataModel->SetTitle(" ; p_T (GeV/c); Data / model fit");
+		dataModel->SetLineWidth(2);
+		dataModel->GetXaxis()->SetLimits(0.2,upper_limit+hist->GetBinWidth(UpperBin_Fit(upper_limit)));
+		dataModel->Draw("A5 SAME");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
+		dataModel->Draw("PX SAME");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
+		dataModel->Write();	
+	// we plot a line at y=1 to show the deviation to Data = Model fit
+
+		//We Store the graph in a Multigraph
+		DM->Add(dataModel);
+		//dataModel->Draw("A5");   // A has to be there (if not, nothing appears on the canvas) & 5 is to plot error rectangles
+		//dataModel->Draw("PX");   // P is to put the chosen marker & X to remove the error bars (leave only the rectangles)
+		// Export of the fit result into result.txt
+		myfile <<"Centrality fichier "<< digit<<"	" << Integral_value << "		" << Integral_error << "	" << 100*Integral(levy,parlevy,par_size_levy,covar_levy,0,a)/Integral(levy,parlevy,par_size_levy,covar_levy,0,b) << "			" <<(100*Integral(levy,parlevy,par_size_levy,covar_levy,0,a)/Integral(levy,parlevy,par_size_levy,covar_levy,0,b)*TMath::Sqrt( TMath::Power( Integral_E(levy,parlevy,par_size_levy,covar_levy,0,a) / Integral(levy,parlevy,par_size_levy,covar_levy,0,a),2)  +  TMath::Power( Integral_E(levy,parlevy,par_size_levy,covar_levy,0,b) / Integral(levy,parlevy,par_size_levy,covar_levy,0,b) ,2) ) ) <<"		"<<chi2_levy(parlevy)<< "		"<<(Nbinx-gMinuit_LEVY->GetNumFreePars())<<"		"<<(chi2_levy(parlevy)/(Nbinx-gMinuit_LEVY->GetNumFreePars()))<<endl;
+	OutputHisto->cd();
+	ROMAIN2->cd();
+	DM->Draw("A5");
+	DM->Draw("PX");
+	TLine *line = new TLine(a,1,upper_limit+hist->GetBinWidth(UpperBin_Fit(upper_limit)),1);
+	line->SetLineColor(30);
+	line->SetLineWidth(3);
+	line->SetLineStyle(2);
+	line->Draw("SAME");
+	ROMAIN2->Write();
+	//DATA_MODEL->Write();
+ 	test1->Write();
+	ROMAIN->Write();
+	OutputHisto->Close();	
+	}
+	}
+//-----------------------------------------------------------------------------FIN DU BOUCLAGE SUR LES FICHIERS----------------------------------------	
 myfile.close();	
 myfile2.close();
 	

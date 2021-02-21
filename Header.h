@@ -66,7 +66,12 @@ int UpperBin_Fit(double Upper_limit);
 
 void fcn_blast_wave(int &npar, double *gin, double &f, double *par, int iflag);
 
+double chi2_blast_wave(double *par) ;
+
 void fcn_levy(int &npar, double *gin, double &f, double *par, int iflag);
+
+double chi2_levy(double *par) ;
+
 
 double mean_p_T( double func_num(double*,double*), double func_denom(double*,double*), double *par , double b);
 
